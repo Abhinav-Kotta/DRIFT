@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 public class DroneData
 {
@@ -61,6 +62,7 @@ public class Middleware
     private UdpClient unityPublisher;
     private bool isRunning = false;
     private const int BUFFER_SIZE = 1024;
+    public string unityIP = "172.17.0.1"; // Will need to change this to your Windows IP
 
     public Middleware(string listenAddress = "127.0.0.1", int listenPort = 9001)
     {
@@ -73,7 +75,13 @@ public class Middleware
     {
         isRunning = true;
         Console.WriteLine("Middleware started...");
-        var unityEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5555);
+        var unityEndpoint = new IPEndPoint(IPAddress.Parse(unityIP), 5555);
+        Console.WriteLine($"Will forward data to Unity at {unityIP}:5555");
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+        };
 
         while (isRunning)
         {
@@ -81,19 +89,18 @@ public class Middleware
             {
                 UdpReceiveResult result = await udpClient.ReceiveAsync();
                 DroneData droneData = ParseTelemetry(result.Buffer);
-                string json = JsonSerializer.Serialize(droneData);
+                string json = JsonSerializer.Serialize(droneData, jsonOptions);  // Added jsonOptions here
                 byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
                 
-                // Debug prints
-                Console.WriteLine($"Sending {jsonBytes.Length} bytes to Unity port 5555");
-                await unityPublisher.SendAsync(jsonBytes, jsonBytes.Length, unityEndpoint);
-                Console.WriteLine("Data sent to Unity");
+                Console.WriteLine($"Received telemetry - Position: ({droneData.Position.X:F2}, {droneData.Position.Y:F2}, {droneData.Position.Z:F2})");
+                Console.WriteLine($"Forwarding {jsonBytes.Length} bytes to Unity");
                 
-                Console.WriteLine($"Position: ({droneData.Position.X:F2}, {droneData.Position.Y:F2}, {droneData.Position.Z:F2})");
+                await unityPublisher.SendAsync(jsonBytes, jsonBytes.Length, unityEndpoint);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
+                await Task.Delay(1000);
             }
         }
     }
@@ -161,15 +168,18 @@ public class Middleware
     public void Stop()
     {
         isRunning = false;
-        udpClient.Close();
-        unityPublisher.Close();
+        udpClient?.Close();
+        unityPublisher?.Close();
     }
 
     public static async Task Main(string[] args)
     {
-        var middleware = new Middleware();
+        // Get the Windows IP from command line argument if provided
+        string windowsIP = args.Length > 0 ? args[0] : "172.17.0.1";
         
-        // Handle Ctrl+C gracefully
+        var middleware = new Middleware();
+        middleware.unityIP = windowsIP;
+        
         Console.CancelKeyPress += (s, e) =>
         {
             e.Cancel = true;
