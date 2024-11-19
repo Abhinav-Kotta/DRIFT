@@ -82,5 +82,6 @@ public class NoClipCam : MonoBehaviour
         // Rotate the camera based on mouse input
         transform.Rotate(Vector3.up, mouseX, Space.World);
         transform.Rotate(Vector3.right, -mouseY, Space.Self);
+        transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0);
     }
 }
