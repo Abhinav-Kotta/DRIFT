@@ -62,7 +62,7 @@ public class Middleware
     private UdpClient unityPublisher;
     private bool isRunning = false;
     private const int BUFFER_SIZE = 1024;
-    public string unityIP = "172.17.0.1"; // Will need to change this to your Windows IP
+    public string unityIP = "127.0.0.1"; // Will need to change this to your Windows IP
 
     public Middleware(string listenAddress = "127.0.0.1", int listenPort = 9001)
     {
