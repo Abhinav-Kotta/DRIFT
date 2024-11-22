@@ -114,7 +114,7 @@ class DroneDBExplorer:
 
 if __name__ == "__main__":
     # Your connection string
-    CONNECTION_STRING = "postgres://tsdbadmin:o10gbb0wr25q6sbs@jh8mw43dxs.fi3yauzvon.tsdb.cloud.timescale.com:39034/tsdb"
+    CONNECTION_STRING = ""
     
     explorer = DroneDBExplorer(CONNECTION_STRING)
     try:
