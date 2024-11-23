@@ -14,7 +14,7 @@ public class DroneMover : MonoBehaviour
     public float angle = 0f;
 
     //artificial speed of the drone for testing
-    [SerializeField] [Range(0,20)] float artificalSpeed = 1f;
+    [SerializeField] [Range(0,20)] float artificalSpeed = 10f;
 
     //postion of drone
     [SerializeField] float x;
@@ -68,10 +68,10 @@ public class DroneMover : MonoBehaviour
 
         
         if(!artificialMovement){
-            simulateMovement(); 
+            setMovement(x,y,z);
         }else
         {
-            setMovement(x,y,z);
+            simulateMovement();
         }
         if(!artificialRotation){
             //setRotation(/*some data from liftoff as char array*/);
