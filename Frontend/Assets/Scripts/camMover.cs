@@ -10,7 +10,16 @@ public class NoClipCam : MonoBehaviour
     [SerializeField] private float ascendDescendSpeed = 5f;
     [SerializeField] private float mouseSensitivity = 2f;
 
+    //array of drones. Assignment of which stream goes to which drone yet to be determined
+    public GameObject[] drones;
+
+    //singleton of drone. used for viewing one particular drone in the scene
+    //Maybe we can get away with this being private but im'm not sure. =V=
+    //Depends on statistic genetation scripts which have yet to be written.
     public GameObject drone;
+
+    //used for cycling between drones
+    public int numberOfDrones;
 
     private Vector3 moveDirection;
 
@@ -26,7 +35,13 @@ public class NoClipCam : MonoBehaviour
     private int mode;
 
     void Start()
-    {
+    {   
+        //initialize the drone to the first drone in the array
+        drone = drones[0];
+        numberOfDrones = drones.Length;
+
+        Debug.Log("Num  of drones: " + numberOfDrones);
+
         mode = 2;
         // Lock the cursor for a better no-clip experience
         Cursor.lockState = CursorLockMode.Locked;
@@ -34,6 +49,10 @@ public class NoClipCam : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            drone = drones[(Array.IndexOf(drones, drone) + 1) % numberOfDrones];
+        }
         if(Input.GetKeyDown(KeyCode.Space))
         {
             mode++;
@@ -58,7 +77,8 @@ public class NoClipCam : MonoBehaviour
     private void firstPerson(){
         followX = drone.transform.position.x;
         followY = drone.transform.position.y;
-        followZ = drone.transform.position.z;
+        //offset so that camera is slightly in front of drone
+        followZ = drone.transform.position.z + 1.8f; 
 
         followRoll = drone.transform.rotation.eulerAngles.x;
         followPitch = drone.transform.rotation.eulerAngles.y;

@@ -16,6 +16,11 @@ public class DroneMover : MonoBehaviour
     //artificial speed of the drone for testing
     [SerializeField] [Range(0,20)] float artificalSpeed = 10f;
 
+    //initial position of the drone, Used only for simulating movement
+    private float initX;
+    private float initY;
+    private float initZ;
+
     //postion of drone
     [SerializeField] float x;
     [SerializeField] float y;
@@ -39,6 +44,12 @@ public class DroneMover : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        initX = gameObject.transform.position.x;
+        initY = gameObject.transform.position.y;
+        initZ = gameObject.transform.position.z;
+
+        y = initY;
+
         propeller1 = GameObject.Find("propeller.1");
         propeller2 = GameObject.Find("propeller.2");
 
@@ -96,12 +107,13 @@ public class DroneMover : MonoBehaviour
     void simulateMovement()
     {
         //make the drone move in a circle
-        x = (float)Math.Cos(angle) * 10f;
-        z = (float)Math.Sin(angle) * 10f; 
+        x = initX + (float)Math.Cos(angle) * 10f;
+        z = initZ + (float)Math.Sin(angle) * 10f; 
 
         //makes the drone roll and pitch to match with movement
         roll = (float)Math.Sin(angle) * 25f;
         pitch = (float)Math.Cos(angle) * 25f;
+        yaw = (float)Math.Cos(angle) * 10f;
 
         //Period of the movement over a time period
         angle += artificalSpeed * Time.deltaTime;
