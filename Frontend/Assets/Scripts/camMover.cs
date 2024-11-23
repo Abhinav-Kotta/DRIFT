@@ -49,6 +49,15 @@ public class NoClipCam : MonoBehaviour
 
     void Update()
     {
+        //It works but might slow down the game. maybe refactor later
+        for ( int i = 1; i <= 9; ++i )
+        {
+            if ( Input.GetKeyDown( "" + i ) )
+            {
+                if(i <= numberOfDrones)
+                    drone = drones[i-1];
+            }
+        }
         if(Input.GetKeyDown(KeyCode.Tab))
         {
             drone = drones[(Array.IndexOf(drones, drone) + 1) % numberOfDrones];

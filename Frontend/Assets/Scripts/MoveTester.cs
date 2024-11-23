@@ -195,10 +195,10 @@ public class DroneMover : MonoBehaviour
         float motor4 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[13], (byte)rotationStats[14], (byte)rotationStats[15], (byte)rotationStats[16] }, 0);
 
         //so if we pass in 4 04B0 04B0 04B0 04B0 we should get 1200 for each motor (0X404B004B004B004B0)
-        Debug.Log("Motor 1: " + motor1);
-        Debug.Log("Motor 2: " + motor2);    
-        Debug.Log("Motor 3: " + motor3);
-        Debug.Log("Motor 4: " + motor4);
+        // Debug.Log("Motor 1: " + motor1);
+        // Debug.Log("Motor 2: " + motor2);    
+        // Debug.Log("Motor 3: " + motor3);
+        // Debug.Log("Motor 4: " + motor4);
 
         //front two propellers
         propeller1.transform.Rotate(0, 0, motor1 * Time.deltaTime);
