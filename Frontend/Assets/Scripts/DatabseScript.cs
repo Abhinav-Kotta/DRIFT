@@ -1,28 +1,27 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
-public class DatabseScript : MonoBehaviour
+
+public class DatabaseScript : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Start the coroutine to get the data from the server
-        // based on localhost of flask server
-        StartCoroutine(getRequest("http://127.0.0.1:5000/getall"));
+        StartCoroutine(GetDroneData());
     }
 
-    IEnumerator getRequest(string uri)
+    IEnumerator GetDroneData()
     {
+        string uri = "http://127.0.0.1:5000/telemetry";
         UnityWebRequest uwr = UnityWebRequest.Get(uri);
         yield return uwr.SendWebRequest();
 
-        if (uwr.isNetworkError)
+        if (uwr.result == UnityWebRequest.Result.ConnectionError)
         {
-            Debug.Log("Error While Sending: " + uwr.error);
+            Debug.Log("Error: " + uwr.error);
         }
         else
         {
-            Debug.Log("Received: " + uwr.downloadHandler.text);
+            Debug.Log("Data received: " + uwr.downloadHandler.text);
         }
     }
 }
