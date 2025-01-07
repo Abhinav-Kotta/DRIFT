@@ -1,7 +1,12 @@
 import psycopg2
+from dotenv import load_dotenv
+import os
 
-#Connection string
-CONNECTION = "postgres://tsdbadmin:r11z8rd99hapocaq@q7pcmp9w1b.fi3yauzvon.tsdb.cloud.timescale.com:34181/tsdb?sslmode=require"
+# Load environment variables from .env file
+load_dotenv()
+
+# Build connection string from environment variables
+CONNECTION = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?sslmode=require"
 
 def get_all_data():
     conn = psycopg2.connect(CONNECTION)
@@ -13,10 +18,9 @@ def get_all_data():
     
     tables = cursor.fetchall()
     
-    # Print the tables
     print("\nTables in database:")
     for table in tables:
-        print(table[0])  # table[0] since fetchall returns tuples
+        print(table[0])
         
     cursor.close()
     conn.close()
