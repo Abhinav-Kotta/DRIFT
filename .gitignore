@@ -71,3 +71,4 @@ Frontend/[Aa]ssets/[Ss]treamingAssets/aa.meta
 Frontend/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 venv/
+.env
