@@ -15,12 +15,18 @@ connected_clients = {config["udp_port"]: set() for config in RACE_CONFIGS}
 print("connected clients: ", connected_clients)
 
 def ws_available_ports():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        s.listen(5)
-        print(f"Listening on port {s.getsockname()[1]}")
-        RACE_CONFIGS.append()
-        return s.getsockname()[1]
+    ports = []
+    for _ in range(2):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', 0))
+            s.listen(5)
+            ws_port = s.getsockname()[1]
+            udp_port = ws_port + 1
+            #print(f"Listening on port {port}")
+            config = {"udp_port" : udp_port, "ws_port" : ws_port}
+            RACE_CONFIGS.append(config)
+            ports.append({"udp_port" : udp_port, "ws_port" : ws_port})
+    return ports
 
 async def websocket_handler(websocket, path, udp_port):
     """Handle WebSocket connections for a specific race"""
@@ -77,7 +83,8 @@ async def broadcast_position(message, udp_port):
 async def main():
     """Start WebSocket servers and UDP listeners"""
     # Start WebSocket servers
-    available_ports()
+    ws_available_ports()
+    print(RACE_CONFIGS)
     websocket_servers = []
     for config in RACE_CONFIGS:
         ws_server = await websockets.serve(
