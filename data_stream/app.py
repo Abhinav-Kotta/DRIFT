@@ -1,9 +1,6 @@
 from flask import Flask, jsonify
-from multi_ports import ws_available_ports
 from flask_cors import CORS
-import os
-from datetime import datetime
-
+from multi_ports import ws_available_ports
 
 app = Flask(__name__)
 
@@ -22,3 +19,8 @@ def create_race():
 @app.route('/watchrace/<raceId>', methods=['GET'])
 def watch_race(raceId):
     return jsonify({"message": "watching race"})
+
+
+
+if __name__ == "__main__":
+    app.run()
