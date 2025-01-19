@@ -14,7 +14,7 @@ public class DroneMover : MonoBehaviour
     public float angle = 0f;
 
     //artificial speed of the drone for testing
-    [SerializeField] [Range(0,20)] float artificalSpeed = 10f;
+    [SerializeField] [Range(0,20)] private float artificalSpeed = 10f;
 
     //initial position of the drone, Used only for simulating movement
     private float initX;
@@ -209,4 +209,11 @@ public class DroneMover : MonoBehaviour
         propeller4.transform.Rotate(0, 0, -motor4 * Time.deltaTime);
     }
     //END ROTATION STUFF. Thank god that is over
+
+
+    //Getters
+    public float GetSpeed()
+    {
+        return artificalSpeed;
+    }
 }
