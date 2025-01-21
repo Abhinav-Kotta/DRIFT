@@ -50,11 +50,11 @@ public class DroneMover : MonoBehaviour
 
         y = initY;
 
-        propeller1 = GameObject.Find("propeller.1");
-        propeller2 = GameObject.Find("propeller.2");
 
-        propeller3 = GameObject.Find("propeller.3");   
-        propeller4 = GameObject.Find("propeller.4");
+        propeller1 = transform.Find("propeller.1").gameObject;
+        propeller2 = transform.Find("propeller.2").gameObject;
+        propeller3 = transform.Find("propeller.3").gameObject;  
+        propeller4 = transform.Find("propeller.4").gameObject;
         if(propeller1 == null || propeller2 == null || propeller3 == null || propeller4 == null)
         {
             Debug.LogError("Propellers not found");

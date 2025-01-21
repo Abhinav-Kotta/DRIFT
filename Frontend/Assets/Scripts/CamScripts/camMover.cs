@@ -11,6 +11,7 @@ public class NoClipCam : MonoBehaviour
     [SerializeField] private float mouseSensitivity = 2f;
 
     //array of drones. Assignment of which stream goes to which drone yet to be determined
+    //TO DO: Get Drone List from data manager
     public GameObject[] drones;
 
     //singleton of drone. used for viewing one particular drone in the scene
