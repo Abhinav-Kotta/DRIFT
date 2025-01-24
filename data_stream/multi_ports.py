@@ -4,109 +4,96 @@ import asyncio
 import websockets
 import json
 from concurrent.futures import ThreadPoolExecutor
-# Configuration for multiple races
-RACE_CONFIGS = [
-    {"udp_port": 27016, "ws_port": 9090},
-    {"udp_port": 27017, "ws_port": 9091},
-    {"udp_port": 27018, "ws_port": 9092},
-]
-# Store connected WebSocket clients for each race
-connected_clients = {config["udp_port"]: set() for config in RACE_CONFIGS}
-print("connected clients: ", connected_clients)
+from queue import Queue
+from dataclasses import dataclass
+from typing import Dict, Set
 
-def ws_available_ports():
-    ports = []
-    for _ in range(2):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('', 0))
-            s.listen(5)
-            ws_port = s.getsockname()[1]
-            udp_port = ws_port + 1
-            #print(f"Listening on port {port}")
-            config = {"udp_port" : udp_port, "ws_port" : ws_port}
-            RACE_CONFIGS.append(config)
-            ports.append({"udp_port" : udp_port, "ws_port" : ws_port})
-    return ports
+@dataclass
+class RaceMessage:
+    port: int
+    data: str
 
-async def websocket_handler(websocket, path, udp_port):
-    """Handle WebSocket connections for a specific race"""
-    try:
-        connected_clients[udp_port].add(websocket)
-        print(f"Client connected to race on UDP port {udp_port}")
+class RaceServer:
+    def __init__(self):
+        self.race_clients: Dict[int, Set[websockets.WebSocketServerProtocol]] = {}
+        self.message_queue = Queue()
+        
+    def get_available_ports(self):
+        ports = []
+        for _ in range(2):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('', 0))
+                s.listen(5)
+                ports.append(s.getsockname()[1])
+        return ports
 
-        # Keep the connection alive and wait for disconnection
-        await websocket.wait_closed()
-    finally:
-        connected_clients[udp_port].remove(websocket)
-        print(f"Client disconnected from race on UDP port {udp_port}")
-def start_udp_server(udp_port):
-    """Start a UDP server for a specific port"""
-    udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = ('0.0.0.0', udp_port)
-    udp_server.bind(server_address)
-    print(f'UDP Server is listening at port {udp_port}')
-
-    while True:
-        print("after while true")
+    async def websocket_handler(self, websocket, path):
+        race_port = int(path.split('/')[-1])
         try:
-            data, client_address = udp_server.recvfrom(4096)
-            print("data: ", data)
-            if len(data) == 12:
-                position = struct.unpack('fff', data)
-                position_x, position_y, position_z = position
+            if race_port not in self.race_clients:
+                self.race_clients[race_port] = set()
+            self.race_clients[race_port].add(websocket)
+            print(f"Client connected to race on UDP port {race_port}")
+            await websocket.wait_closed()
+        finally:
+            self.race_clients[race_port].remove(websocket)
+            print(f"Client disconnected from race on UDP port {race_port}")
 
-                # Create JSON message
-                message = json.dumps({
-                    "x": position_x,
-                    "y": position_y,
-                    "z": position_z
-                })
+    def start_udp_server(self, udp_port):
+        udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('0.0.0.0', udp_port)
+        udp_server.bind(server_address)
+        print(f'UDP Server listening on port {udp_port}')
 
-                # Send to all connected WebSocket clients for this race
-                asyncio.run(broadcast_position(message, udp_port))
-
-                print(f"Port {udp_port} - Position: X={position_x:.2f}, Y={position_y:.2f}, Z={position_z:.2f}")
-        except Exception as e:
-            print(f"Error on port {udp_port}: {str(e)}")
-async def broadcast_position(message, udp_port):
-    """Broadcast position data to all connected clients for a specific race"""
-    if udp_port in connected_clients:
-        disconnected = set()
-        for client in connected_clients[udp_port]:
+        while True:
             try:
-                await client.send(message)
-            except websockets.exceptions.ConnectionClosed:
-                disconnected.add(client)
+                data, _ = udp_server.recvfrom(4096)
+                if len(data) == 12:
+                    position = struct.unpack('fff', data)
+                    message = json.dumps({
+                        "x": position[0],
+                        "y": position[1],
+                        "z": position[2]
+                    })
+                    self.message_queue.put(RaceMessage(udp_port, message))
+            except Exception as e:
+                print(f"Error on UDP port {udp_port}: {str(e)}")
 
-        # Remove disconnected clients
-        connected_clients[udp_port] -= disconnected
-async def main():
-    """Start WebSocket servers and UDP listeners"""
-    # Start WebSocket servers
-    ws_available_ports()
-    print(RACE_CONFIGS)
-    websocket_servers = []
-    for config in RACE_CONFIGS:
-        ws_server = await websockets.serve(
-            lambda ws, path, port=config["udp_port"]: websocket_handler(ws, path, port),
-            "0.0.0.0", 
-           config["ws_port"]
-        )
-        websocket_servers.append(ws_server)
-    print(f"WebSocket server started on port {config['ws_port']}")
+    async def broadcast_worker(self):
+        while True:
+            try:
+                while not self.message_queue.empty():
+                    msg = self.message_queue.get()
+                    if msg.port in self.race_clients:
+                        disconnected = set()
+                        for client in self.race_clients[msg.port]:
+                            try:
+                                await client.send(msg.data)
+                            except websockets.exceptions.ConnectionClosed:
+                                disconnected.add(client)
+                        self.race_clients[msg.port] -= disconnected
+                await asyncio.sleep(0.001)  # Small delay to prevent CPU hogging
+            except Exception as e:
+                print(f"Error in broadcast worker: {str(e)}")
 
-    # Start UDP servers in separate threads
-    with ThreadPoolExecutor(max_workers=len(RACE_CONFIGS)) as executor:
-        udp_tasks = [
-            executor.submit(start_udp_server, config["udp_port"])
-            for config in RACE_CONFIGS
-        ]
+    async def main(self):
+        udp_ports = self.get_available_ports()
+        print("Available UDP ports:", udp_ports)
 
-    # Keep the program running
-    await asyncio.gather(*(
-        ws_server.wait_closed() 
-        for ws_server in websocket_servers
-    ))
+        # Start WebSocket server
+        ws_server = await websockets.serve(self.websocket_handler, "0.0.0.0", 9090)
+        print("WebSocket server started on port 9090")
+
+        # Start UDP servers
+        with ThreadPoolExecutor(max_workers=len(udp_ports)) as executor:
+            executor.map(self.start_udp_server, udp_ports)
+
+        # Start broadcast worker
+        asyncio.create_task(self.broadcast_worker())
+        
+        await ws_server.wait_closed()
+
 if __name__ == "__main__":
-    print("Starting multi-port race server...")
-    asyncio.run(main())
+    print("Starting race server...")
+    server = RaceServer()
+    asyncio.run(server.main())
