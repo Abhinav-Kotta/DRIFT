@@ -28,6 +28,30 @@ def ws_available_ports():
             ports.append({"udp_port" : udp_port, "ws_port" : ws_port})
     return ports
 
+async def close_connection(udp_port, ws_port):
+    try:
+        if udp_port in connected_clients:
+            connected_copy = connected_clients[udp_port].copy
+            for clients in connected_copy:
+                try:
+                    await clients.close()
+                    print(f"close websocket conneciton for {udp_port}")
+                except Exception as e:
+                    print(f"error when closing a connectioned {e}")
+
+            connected_clients[udp_port].clear()
+
+        for config in RACE_CONFIGS[:]:
+            if config["udp_port"] == udp_port and config["ws_port"] == ws_port:
+                RACE_CONFIGS.remove(config)
+                print(f"removed config {udp_port}:{ws_port}")
+
+    except Exception as e:
+        print(f"Error while closing the connection: {e}")
+
+
+
+
 async def websocket_handler(websocket, path, udp_port):
     """Handle WebSocket connections for a specific race"""
     try:
@@ -101,6 +125,10 @@ async def main():
             executor.submit(start_udp_server, config["udp_port"])
             for config in RACE_CONFIGS
         ]
+    
+    await asyncio.sleep(5)
+    await close_connection(27016, 9090)
+    print(RACE_CONFIGS)
 
     # Keep the program running
     await asyncio.gather(*(
