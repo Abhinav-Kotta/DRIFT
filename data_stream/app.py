@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from multi_ports import ws_available_ports
+from DRIFT.data_stream.ws import ws_available_ports
 
 app = Flask(__name__)
 
