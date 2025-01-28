@@ -1,13 +1,11 @@
 import socket
-import struct
 import asyncio
 import websockets
 import json
-import argparse
-from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
 from typing import Dict, Set
+from telemetry_parser import LiftoffParser, create_udp_server
 
 @dataclass
 class RaceMessage:
@@ -15,10 +13,11 @@ class RaceMessage:
     data: str
 
 class RaceServer:
-    def __init__(self, udp_port: int):
+    def __init__(self):
         self.race_clients: Dict[int, Set[websockets.WebSocketServerProtocol]] = {}
         self.message_queue = Queue()
-        self.udp_port = udp_port
+        self.udp_servers: Dict[int, socket.socket] = {}
+        self.parsers: Dict[int, LiftoffParser] = {}
 
     async def websocket_handler(self, websocket, path):
         race_port = int(path.split('/')[-1])
@@ -38,25 +37,35 @@ class RaceServer:
         print(f"WebSocket server started on port {ws_port}", flush=True)
         return ws_port
 
-    def start_udp_server(self):
-        udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server_address = ('0.0.0.0', self.udp_port)
-        udp_server.bind(server_address)
-        print(f'UDP Server listening on port {self.udp_port}')
+    def start_udp_server(self, udp_port: int):
+        config = {
+            "StreamFormat": [
+                "Timestamp",
+                "Position",
+                "Attitude",
+                "Velocity",
+                "Gyro",
+                "Input",
+                "Battery",
+                "MotorRPM"
+            ]
+        }
+
+        udp_server, parser = create_udp_server('0.0.0.0', udp_port, config["StreamFormat"])
+        self.udp_servers[udp_port] = udp_server
+        self.parsers[udp_port] = parser
+        print(f'UDP Server listening on port {udp_port}')
 
         while True:
             try:
                 data, _ = udp_server.recvfrom(4096)
-                if len(data) == 12:
-                    position = struct.unpack('fff', data)
-                    message = json.dumps({
-                        "x": position[0],
-                        "y": position[1],
-                        "z": position[2]
-                    })
-                    self.message_queue.put(RaceMessage(self.udp_port, message))
+                telemetry = parser.parse_packet(data)
+                self.message_queue.put(RaceMessage(udp_port, telemetry.to_json()))
             except Exception as e:
-                print(f"Error on UDP port {self.udp_port}: {str(e)}")
+                print(f"Error on UDP port {udp_port}: {str(e)}")
+
+    def add_udp_server(self, udp_port: int):
+        asyncio.get_event_loop().run_in_executor(None, self.start_udp_server, udp_port)
 
     async def broadcast_worker(self):
         while True:
@@ -78,12 +87,18 @@ class RaceServer:
     async def main(self):
         ws_port = await self.start_ws_server()
         asyncio.create_task(self.broadcast_worker())
-        asyncio.get_event_loop().run_in_executor(None, self.start_udp_server)
         await self.ws_server.wait_closed()
 
+# Global instance
+race_server = RaceServer()
+
+async def start_server():
+    ws_port = await race_server.start_ws_server()
+    asyncio.create_task(race_server.broadcast_worker())
+    return ws_port
+
+def add_udp_port(port: int):
+    race_server.add_udp_server(port)
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--port', type=int, required=True)
-    args = parser.parse_args()
-    server = RaceServer(args.port)
-    asyncio.run(server.main())
+    asyncio.run(race_server.main())
