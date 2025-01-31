@@ -72,3 +72,4 @@ Frontend/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 venv/
 .env
+__pycache__/
