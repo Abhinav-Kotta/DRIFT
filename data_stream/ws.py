@@ -1,23 +1,49 @@
 import socket
+import struct
 import asyncio
 import websockets
 import json
+import psutil
+import os
+import signal
+from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
 from typing import Dict, Set
-from telemetry_parser import LiftoffParser, create_udp_server
+
+WS_PORT = 8765 
 
 @dataclass
 class RaceMessage:
     port: int
     data: str
 
+def cleanup_ws_port():
+    """Cleanup any process using the WebSocket port"""
+    for conn in psutil.net_connections():
+        if conn.laddr.port == WS_PORT and conn.pid is not None:
+            try:
+                process = psutil.Process(conn.pid)
+                if process.pid != os.getpid():  # Don't kill ourselves
+                    print(f"Killing process using WebSocket port {WS_PORT}")
+                    os.kill(process.pid, signal.SIGTERM)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+
+def is_port_available(port: int) -> bool:
+    """Check if a port is available"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('0.0.0.0', port))
+            return True
+        except socket.error:
+            return False
+
 class RaceServer:
     def __init__(self):
         self.race_clients: Dict[int, Set[websockets.WebSocketServerProtocol]] = {}
         self.message_queue = Queue()
         self.udp_servers: Dict[int, socket.socket] = {}
-        self.parsers: Dict[int, LiftoffParser] = {}
 
     async def websocket_handler(self, websocket, path):
         race_port = int(path.split('/')[-1])
@@ -32,35 +58,37 @@ class RaceServer:
             print(f"Client disconnected from race on UDP port {race_port}")
     
     async def start_ws_server(self):
-        self.ws_server = await websockets.serve(self.websocket_handler, "0.0.0.0", 0)
-        ws_port = self.ws_server.sockets[0].getsockname()[1]
-        print(f"WebSocket server started on port {ws_port}", flush=True)
-        return ws_port
+        # Check if port is in use and clean up if necessary
+        if not is_port_available(WS_PORT):
+            print(f"Port {WS_PORT} is in use. Attempting cleanup...")
+            cleanup_ws_port()
+            await asyncio.sleep(1)  # Give time for cleanup
+            
+            if not is_port_available(WS_PORT):
+                raise RuntimeError(f"Could not secure port {WS_PORT} for WebSocket server")
+
+        self.ws_server = await websockets.serve(self.websocket_handler, "0.0.0.0", WS_PORT)
+        print(f"WebSocket server started on port {WS_PORT}", flush=True)
+        return WS_PORT
 
     def start_udp_server(self, udp_port: int):
-        config = {
-            "StreamFormat": [
-                "Timestamp",
-                "Position",
-                "Attitude",
-                "Velocity",
-                "Gyro",
-                "Input",
-                "Battery",
-                "MotorRPM"
-            ]
-        }
-
-        udp_server, parser = create_udp_server('0.0.0.0', udp_port, config["StreamFormat"])
+        udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('0.0.0.0', udp_port)
+        udp_server.bind(server_address)
         self.udp_servers[udp_port] = udp_server
-        self.parsers[udp_port] = parser
         print(f'UDP Server listening on port {udp_port}')
 
         while True:
             try:
                 data, _ = udp_server.recvfrom(4096)
-                telemetry = parser.parse_packet(data)
-                self.message_queue.put(RaceMessage(udp_port, telemetry.to_json()))
+                if len(data) == 12:
+                    position = struct.unpack('fff', data)
+                    message = json.dumps({
+                        "x": position[0],
+                        "y": position[1],
+                        "z": position[2]
+                    })
+                    self.message_queue.put(RaceMessage(udp_port, message))
             except Exception as e:
                 print(f"Error on UDP port {udp_port}: {str(e)}")
 
@@ -87,9 +115,12 @@ class RaceServer:
     async def main(self):
         ws_port = await self.start_ws_server()
         asyncio.create_task(self.broadcast_worker())
-        await self.ws_server.wait_closed()
+        try:
+            await self.ws_server.wait_closed()
+        finally:
+            for udp_socket in self.udp_servers.values():
+                udp_socket.close()
 
-# Global instance
 race_server = RaceServer()
 
 async def start_server():
@@ -101,4 +132,11 @@ def add_udp_port(port: int):
     race_server.add_udp_server(port)
 
 if __name__ == "__main__":
-    asyncio.run(race_server.main())
+    try:
+        asyncio.run(race_server.main())
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+    finally:
+        # Cleanup on exit
+        for udp_socket in race_server.udp_servers.values():
+            udp_socket.close()
