@@ -12,6 +12,12 @@ public class RaceResponse
     public string status;
 }
 
+[Serializable]  // Add this class
+public class RaceList
+{
+    public RaceResponse[] races;
+}
+
 public class RaceClient : MonoBehaviour
 {
     [SerializeField]
