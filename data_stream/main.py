@@ -4,10 +4,12 @@ import asyncio
 import sys
 from pydantic import BaseModel
 from typing import Dict, Optional
+import uuid
 
 app = FastAPI()
 
 class RaceResponse(BaseModel):
+    race_id: str
     udp_port: int
     ws_port: int
     status: str
@@ -49,19 +51,32 @@ def add_udp_server(udp_port: int):
 async def startup_event():
     await ensure_ws_server()
 
+active_races: Dict[str, RaceResponse] = {}
 @app.post("/create_race")
 async def create_race() -> RaceResponse:
     udp_port = get_available_port()
+    race_id = str(uuid.uuid4())
     
     try:
         add_udp_server(udp_port)
-        return RaceResponse(
+        race_response = RaceResponse(
+            race_id=race_id,
             udp_port=udp_port,
             ws_port=WS_PORT,  
             status="started"
         )
+        active_races[race_id] = race_response
+        return race_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start race server: {str(e)}")
+    
+@app.get("/watch_race/{race_id}")
+async def watch_race(race_id: str) -> RaceResponse:
+    if race_id not in active_races:
+        raise HTTPException(status_code=404, detail="Race not found")
+    
+    race_info = active_races[race_id]
+    return race_info
 
 @app.on_event("shutdown")
 async def shutdown_event():
