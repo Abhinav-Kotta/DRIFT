@@ -78,6 +78,10 @@ async def watch_race(race_id: str) -> RaceResponse:
     race_info = active_races[race_id]
     return race_info
 
+@app.get("/list_races")
+async def list_races() -> Dict[str, RaceResponse]:
+    return active_races
+
 @app.on_event("shutdown")
 async def shutdown_event():
     pass
