@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
 from typing import Dict, Set
+from telemetry_parser import create_udp_server
 
 WS_PORT = 8765 
 
@@ -72,23 +73,17 @@ class RaceServer:
         return WS_PORT
 
     def start_udp_server(self, udp_port: int):
-        udp_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server_address = ('0.0.0.0', udp_port)
-        udp_server.bind(server_address)
+        stream_format = ["Timestamp", "Position", "Attitude", "Velocity", "Gyro", "Input", "Battery", "MotorRPM"]
+        udp_server, parser = create_udp_server('0.0.0.0', udp_port, stream_format)
         self.udp_servers[udp_port] = udp_server
         print(f'UDP Server listening on port {udp_port}')
 
         while True:
             try:
                 data, _ = udp_server.recvfrom(4096)
-                if len(data) == 12:
-                    position = struct.unpack('fff', data)
-                    message = json.dumps({
-                        "x": position[0],
-                        "y": position[1],
-                        "z": position[2]
-                    })
-                    self.message_queue.put(RaceMessage(udp_port, message))
+                telemetry = parser.parse_packet(data)
+                message = telemetry.to_json()
+                self.message_queue.put(RaceMessage(udp_port, message))
             except Exception as e:
                 print(f"Error on UDP port {udp_port}: {str(e)}")
 

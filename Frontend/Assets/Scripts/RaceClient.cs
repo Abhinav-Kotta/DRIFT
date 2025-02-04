@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Threading.Tasks;
 using System;
+using NativeWebSocket;
 
 [Serializable]
 public class RaceResponse
@@ -12,43 +13,178 @@ public class RaceResponse
     public string status;
 }
 
-[Serializable]  // Add this class
-public class RaceList
+[Serializable]
+public class TelemetryData
 {
-    public RaceResponse[] races;
+    public float timestamp;
+    public Position position;
+    public Attitude attitude;
+    public Vector3Data velocity;
+    public GyroData gyro;
+    public InputData input;
+    public BatteryData battery;
+    public float[] motor_rpm;
+}
+
+[Serializable]
+public class Position
+{
+    public float x;
+    public float y;
+    public float z;
+}
+
+[Serializable]
+public class Attitude
+{
+    public float x;
+    public float y;
+    public float z;
+    public float w;
+}
+
+[Serializable]
+public class Vector3Data
+{
+    public float x;
+    public float y;
+    public float z;
+}
+
+[Serializable]
+public class GyroData
+{
+    public float pitch;
+    public float roll;
+    public float yaw;
+}
+
+[Serializable]
+public class InputData
+{
+    public float throttle;
+    public float yaw;
+    public float pitch;
+    public float roll;
+}
+
+[Serializable]
+public class BatteryData
+{
+    public float voltage;
+    public float percentage;
 }
 
 public class RaceClient : MonoBehaviour
 {
     [SerializeField]
     private string baseApiUrl = "http://34.68.252.128:8000";
-
+    
     private RaceResponse currentRace;
+    private WebSocket websocket;
+    private bool isConnected = false;
+
+    [SerializeField]
+    private TMPro.TextMeshProUGUI batteryText;
+    [SerializeField]
+    private TMPro.TextMeshProUGUI motorRpmText;
 
     async void Start()
     {
-        Debug.Log("Starting...");
-    
-        // First create a race to get a valid race ID
         RaceResponse newRace = await CreateRace();
         if (newRace != null)
         {
-            Debug.Log($"Created race with ID: {newRace.race_id}");
-            
-            // Now test watching this race
-            RaceResponse watchedRace = await WatchRace(newRace.race_id);
-            if (watchedRace != null)
+            await ConnectToRace(newRace);
+        }
+    }
+
+    async Task ConnectToRace(RaceResponse race)
+    {
+        try
+        {
+            string wsUrl = $"ws://{new Uri(baseApiUrl).Host}:8000/ws/race/{race.race_id}";
+            websocket = new WebSocket(wsUrl);
+
+            websocket.OnOpen += () =>
             {
-                Debug.Log($"Successfully watching race!");
-                Debug.Log($"Race ID: {watchedRace.race_id}");
-                Debug.Log($"UDP Port: {watchedRace.udp_port}");
-                Debug.Log($"WS Port: {watchedRace.ws_port}");
-                Debug.Log($"Status: {watchedRace.status}");
-            }
-            else
+                isConnected = true;
+            };
+
+            websocket.OnMessage += (bytes) =>
             {
-                Debug.LogError("Failed to watch race!");
+                string message = System.Text.Encoding.UTF8.GetString(bytes);
+                HandleRaceData(message);
+            };
+
+            websocket.OnError += (e) =>
+            {
+                Debug.LogError($"WebSocket Error: {e}");
+            };
+
+            websocket.OnClose += (e) =>
+            {
+                isConnected = false;
+            };
+
+            await websocket.Connect();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error connecting to websocket: {e.Message}");
+        }
+    }
+
+    void HandleRaceData(string jsonData)
+    {
+        try
+        {
+            var telemetry = JsonUtility.FromJson<TelemetryData>(jsonData);
+            if (telemetry == null)
+            {
+                return;
             }
+
+            transform.position = new Vector3(
+                telemetry.position.x,
+                telemetry.position.y,
+                telemetry.position.z
+            );
+
+            transform.rotation = new Quaternion(
+                telemetry.attitude.x,
+                telemetry.attitude.y,
+                telemetry.attitude.z,
+                telemetry.attitude.w
+            );
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = new Vector3(
+                    telemetry.velocity.x,
+                    telemetry.velocity.y,
+                    telemetry.velocity.z
+                );
+            }
+
+            if (batteryText != null)
+            {
+                batteryText.text = $"Battery: {telemetry.battery.percentage:F1}% ({telemetry.battery.voltage:F1}V)";
+            }
+
+            if (motorRpmText != null && telemetry.motor_rpm != null)
+            {
+                string rpmText = "Motor RPM:";
+                for (int i = 0; i < telemetry.motor_rpm.Length; i++)
+                {
+                    rpmText += $"\nMotor {i + 1}: {telemetry.motor_rpm[i]:F0}";
+                }
+                motorRpmText.text = rpmText;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error parsing telemetry data: {e.Message}\nRaw data: {jsonData}");
         }
     }
 
@@ -59,23 +195,17 @@ public class RaceClient : MonoBehaviour
             string createUrl = $"{baseApiUrl}/create_race";
             using (UnityWebRequest request = UnityWebRequest.PostWwwForm(createUrl, ""))
             {
-                Debug.Log($"Creating new race at {createUrl}");
                 var operation = request.SendWebRequest();
-
                 while (!operation.isDone)
                     await Task.Yield();
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError($"Failed to create race: {request.error}");
                     return null;
                 }
 
                 string jsonResponse = request.downloadHandler.text;
-                Debug.Log($"Received response: {jsonResponse}");
-                
                 currentRace = JsonUtility.FromJson<RaceResponse>(jsonResponse);
-                Debug.Log($"Race created with ID: {currentRace.race_id}");
                 return currentRace;
             }
         }
@@ -86,71 +216,19 @@ public class RaceClient : MonoBehaviour
         }
     }
 
-    public async Task<RaceResponse> WatchRace(string raceId)
+    void Update()
     {
-        try
+        if (websocket != null)
         {
-            string watchUrl = $"{baseApiUrl}/watch_race/{raceId}";
-            using (UnityWebRequest request = UnityWebRequest.Get(watchUrl))
-            {
-                Debug.Log($"Querying race: {watchUrl}");
-                var operation = request.SendWebRequest();
-
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"Failed to watch race: {request.error}");
-                    return null;
-                }
-
-                string jsonResponse = request.downloadHandler.text;
-                Debug.Log($"Received race data: {jsonResponse}");
-                
-                currentRace = JsonUtility.FromJson<RaceResponse>(jsonResponse);
-                Debug.Log($"Connected to race with ID: {currentRace.race_id}");
-                return currentRace;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error watching race: {e.Message}");
-            return null;
+            websocket.DispatchMessageQueue();
         }
     }
 
-    public async Task<RaceResponse[]> GetLiveRaces()
+    private async void OnApplicationQuit()
     {
-        try
+        if (websocket != null && isConnected)
         {
-            string listUrl = $"{baseApiUrl}/list_races";
-            using (UnityWebRequest request = UnityWebRequest.Get(listUrl))
-            {
-                var operation = request.SendWebRequest();
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"Failed to get race list: {request.error}");
-                    return null;
-                }
-
-                string jsonResponse = request.downloadHandler.text;
-                RaceList raceList = JsonUtility.FromJson<RaceList>(jsonResponse);
-                return raceList.races;
-            }
+            await websocket.Close();
         }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error getting race list: {e.Message}");
-            return null;
-        }
-    }
-
-    public RaceResponse GetCurrentRace()
-    {
-        return currentRace;
     }
 }
