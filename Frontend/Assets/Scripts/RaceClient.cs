@@ -127,7 +127,7 @@ public class RaceClient : MonoBehaviour
         }
     }
 
-    async void Update()
+    void Update()
     {
         if (websocket != null)
         {
