@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Threading.Tasks;
 using System;
+using NativeWebSocket;
 
 [Serializable]
 public class RaceResponse
@@ -12,7 +13,7 @@ public class RaceResponse
     public string status;
 }
 
-[Serializable]  // Add this class
+[Serializable]
 public class RaceList
 {
     public RaceResponse[] races;
@@ -22,33 +23,73 @@ public class RaceClient : MonoBehaviour
 {
     [SerializeField]
     private string baseApiUrl = "http://34.68.252.128:8000";
-
+    
     private RaceResponse currentRace;
+    private WebSocket websocket;
+    private bool isConnected = false;
 
     async void Start()
     {
         Debug.Log("Starting...");
-    
-        // First create a race to get a valid race ID
         RaceResponse newRace = await CreateRace();
         if (newRace != null)
         {
-            Debug.Log($"Created race with ID: {newRace.race_id}");
-            
-            // Now test watching this race
-            RaceResponse watchedRace = await WatchRace(newRace.race_id);
-            if (watchedRace != null)
+            await ConnectToRace(newRace);
+        }
+    }
+
+    async Task ConnectToRace(RaceResponse race)
+    {
+        try
+        {
+            string wsUrl = $"ws://{new Uri(baseApiUrl).Host}:8000/ws/race/{race.race_id}";
+            websocket = new WebSocket(wsUrl);
+
+            websocket.OnOpen += () =>
             {
-                Debug.Log($"Successfully watching race!");
-                Debug.Log($"Race ID: {watchedRace.race_id}");
-                Debug.Log($"UDP Port: {watchedRace.udp_port}");
-                Debug.Log($"WS Port: {watchedRace.ws_port}");
-                Debug.Log($"Status: {watchedRace.status}");
-            }
-            else
+                Debug.Log("Connected to race websocket!");
+                isConnected = true;
+            };
+
+            websocket.OnMessage += (bytes) =>
             {
-                Debug.LogError("Failed to watch race!");
-            }
+                // Parse the received JSON message
+                string message = System.Text.Encoding.UTF8.GetString(bytes);
+                HandleRaceData(message);
+            };
+
+            websocket.OnError += (e) =>
+            {
+                Debug.LogError($"WebSocket Error: {e}");
+            };
+
+            websocket.OnClose += (e) =>
+            {
+                Debug.Log("Connection closed");
+                isConnected = false;
+            };
+
+            // Connecting
+            await websocket.Connect();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error connecting to websocket: {e.Message}");
+        }
+    }
+
+    void HandleRaceData(string jsonData)
+    {
+        try
+        {
+            // Parse position data
+            var data = JsonUtility.FromJson<PositionData>(jsonData);
+            // Update game object position or handle the data as needed
+            Debug.Log($"Received position: {data.x}, {data.y}, {data.z}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error parsing race data: {e.Message}");
         }
     }
 
@@ -86,71 +127,28 @@ public class RaceClient : MonoBehaviour
         }
     }
 
-    public async Task<RaceResponse> WatchRace(string raceId)
+    async void Update()
     {
-        try
+        if (websocket != null)
         {
-            string watchUrl = $"{baseApiUrl}/watch_race/{raceId}";
-            using (UnityWebRequest request = UnityWebRequest.Get(watchUrl))
-            {
-                Debug.Log($"Querying race: {watchUrl}");
-                var operation = request.SendWebRequest();
-
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"Failed to watch race: {request.error}");
-                    return null;
-                }
-
-                string jsonResponse = request.downloadHandler.text;
-                Debug.Log($"Received race data: {jsonResponse}");
-                
-                currentRace = JsonUtility.FromJson<RaceResponse>(jsonResponse);
-                Debug.Log($"Connected to race with ID: {currentRace.race_id}");
-                return currentRace;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error watching race: {e.Message}");
-            return null;
+            // Keep the connection alive
+            websocket.DispatchMessageQueue();
         }
     }
 
-    public async Task<RaceResponse[]> GetLiveRaces()
+    private async void OnApplicationQuit()
     {
-        try
+        if (websocket != null && isConnected)
         {
-            string listUrl = $"{baseApiUrl}/list_races";
-            using (UnityWebRequest request = UnityWebRequest.Get(listUrl))
-            {
-                var operation = request.SendWebRequest();
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (request.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"Failed to get race list: {request.error}");
-                    return null;
-                }
-
-                string jsonResponse = request.downloadHandler.text;
-                RaceList raceList = JsonUtility.FromJson<RaceList>(jsonResponse);
-                return raceList.races;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error getting race list: {e.Message}");
-            return null;
+            await websocket.Close();
         }
     }
+}
 
-    public RaceResponse GetCurrentRace()
-    {
-        return currentRace;
-    }
+[Serializable]
+public class PositionData
+{
+    public float x;
+    public float y;
+    public float z;
 }
