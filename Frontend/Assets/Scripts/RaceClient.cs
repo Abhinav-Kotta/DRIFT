@@ -102,7 +102,6 @@ public class RaceClient : MonoBehaviour
             {
                 Debug.Log($"Creating new race at {createUrl}");
                 var operation = request.SendWebRequest();
-
                 while (!operation.isDone)
                     await Task.Yield();
 
