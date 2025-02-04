@@ -85,6 +85,7 @@ async def websocket_endpoint(websocket: WebSocket, race_id: str):
         if udp_port not in race_server.race_clients:
             race_server.race_clients[udp_port] = set()
         race_server.race_clients[udp_port].add(websocket)
+        print(race_server.race_clients)
 
         try:
             while True:
