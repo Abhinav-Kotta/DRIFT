@@ -14,9 +14,65 @@ public class RaceResponse
 }
 
 [Serializable]
-public class RaceList
+public class TelemetryData
 {
-    public RaceResponse[] races;
+    public float timestamp;
+    public Position position;
+    public Attitude attitude;
+    public Vector3Data velocity;
+    public GyroData gyro;
+    public InputData input;
+    public BatteryData battery;
+    public float[] motor_rpm;
+}
+
+[Serializable]
+public class Position
+{
+    public float x;
+    public float y;
+    public float z;
+}
+
+[Serializable]
+public class Attitude
+{
+    public float x;
+    public float y;
+    public float z;
+    public float w;
+}
+
+[Serializable]
+public class Vector3Data
+{
+    public float x;
+    public float y;
+    public float z;
+}
+
+[Serializable]
+public class GyroData
+{
+    public float pitch;
+    public float roll;
+    public float yaw;
+}
+
+[Serializable]
+public class InputData
+{
+    public float throttle;
+    public float yaw;
+    public float pitch;
+    public float roll;
+}
+
+[Serializable]
+public class BatteryData
+{
+    public float voltage;
+    public float percentage;
 }
 
 public class RaceClient : MonoBehaviour
@@ -28,9 +84,13 @@ public class RaceClient : MonoBehaviour
     private WebSocket websocket;
     private bool isConnected = false;
 
+    [SerializeField]
+    private TMPro.TextMeshProUGUI batteryText;
+    [SerializeField]
+    private TMPro.TextMeshProUGUI motorRpmText;
+
     async void Start()
     {
-        Debug.Log("Starting...");
         RaceResponse newRace = await CreateRace();
         if (newRace != null)
         {
@@ -47,13 +107,11 @@ public class RaceClient : MonoBehaviour
 
             websocket.OnOpen += () =>
             {
-                Debug.Log("Connected to race websocket!");
                 isConnected = true;
             };
 
             websocket.OnMessage += (bytes) =>
             {
-                // Parse the received JSON message
                 string message = System.Text.Encoding.UTF8.GetString(bytes);
                 HandleRaceData(message);
             };
@@ -65,11 +123,9 @@ public class RaceClient : MonoBehaviour
 
             websocket.OnClose += (e) =>
             {
-                Debug.Log("Connection closed");
                 isConnected = false;
             };
 
-            // Connecting
             await websocket.Connect();
         }
         catch (Exception e)
@@ -82,25 +138,53 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            Debug.Log($"Raw data received: {jsonData}"); // Log raw data for debugging
-            
-            // Parse position data
-            var data = JsonUtility.FromJson<PositionData>(jsonData);
-            if (data == null)
+            var telemetry = JsonUtility.FromJson<TelemetryData>(jsonData);
+            if (telemetry == null)
             {
-                Debug.LogError($"Failed to parse position data from: {jsonData}");
                 return;
             }
 
-            // Log parsed position data
-            Debug.Log($"Parsed position - X: {data.x:F2}, Y: {data.y:F2}, Z: {data.z:F2}");
-            
-            // If this GameObject has a Transform (it should), update its position
-            transform.position = new Vector3(data.x, data.y, data.z);
+            transform.position = new Vector3(
+                telemetry.position.x,
+                telemetry.position.y,
+                telemetry.position.z
+            );
+
+            transform.rotation = new Quaternion(
+                telemetry.attitude.x,
+                telemetry.attitude.y,
+                telemetry.attitude.z,
+                telemetry.attitude.w
+            );
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = new Vector3(
+                    telemetry.velocity.x,
+                    telemetry.velocity.y,
+                    telemetry.velocity.z
+                );
+            }
+
+            if (batteryText != null)
+            {
+                batteryText.text = $"Battery: {telemetry.battery.percentage:F1}% ({telemetry.battery.voltage:F1}V)";
+            }
+
+            if (motorRpmText != null && telemetry.motor_rpm != null)
+            {
+                string rpmText = "Motor RPM:";
+                for (int i = 0; i < telemetry.motor_rpm.Length; i++)
+                {
+                    rpmText += $"\nMotor {i + 1}: {telemetry.motor_rpm[i]:F0}";
+                }
+                motorRpmText.text = rpmText;
+            }
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error parsing race data: {e.Message}\nRaw data: {jsonData}");
+            Debug.LogError($"Error parsing telemetry data: {e.Message}\nRaw data: {jsonData}");
         }
     }
 
@@ -111,22 +195,17 @@ public class RaceClient : MonoBehaviour
             string createUrl = $"{baseApiUrl}/create_race";
             using (UnityWebRequest request = UnityWebRequest.PostWwwForm(createUrl, ""))
             {
-                Debug.Log($"Creating new race at {createUrl}");
                 var operation = request.SendWebRequest();
                 while (!operation.isDone)
                     await Task.Yield();
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError($"Failed to create race: {request.error}");
                     return null;
                 }
 
                 string jsonResponse = request.downloadHandler.text;
-                Debug.Log($"Received response: {jsonResponse}");
-                
                 currentRace = JsonUtility.FromJson<RaceResponse>(jsonResponse);
-                Debug.Log($"Race created with ID: {currentRace.race_id}");
                 return currentRace;
             }
         }
@@ -141,7 +220,6 @@ public class RaceClient : MonoBehaviour
     {
         if (websocket != null)
         {
-            // Keep the connection alive
             websocket.DispatchMessageQueue();
         }
     }
@@ -153,12 +231,4 @@ public class RaceClient : MonoBehaviour
             await websocket.Close();
         }
     }
-}
-
-[Serializable]
-public class PositionData
-{
-    public float x;
-    public float y;
-    public float z;
 }
