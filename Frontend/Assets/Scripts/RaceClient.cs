@@ -82,14 +82,25 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
+            Debug.Log($"Raw data received: {jsonData}"); // Log raw data for debugging
+            
             // Parse position data
             var data = JsonUtility.FromJson<PositionData>(jsonData);
-            // Update game object position or handle the data as needed
-            Debug.Log($"Received position: {data.x}, {data.y}, {data.z}");
+            if (data == null)
+            {
+                Debug.LogError($"Failed to parse position data from: {jsonData}");
+                return;
+            }
+
+            // Log parsed position data
+            Debug.Log($"Parsed position - X: {data.x:F2}, Y: {data.y:F2}, Z: {data.z:F2}");
+            
+            // If this GameObject has a Transform (it should), update its position
+            transform.position = new Vector3(data.x, data.y, data.z);
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error parsing race data: {e.Message}");
+            Debug.LogError($"Error parsing race data: {e.Message}\nRaw data: {jsonData}");
         }
     }
 
