@@ -6,7 +6,6 @@ import os
 load_dotenv()
 CONNECTION = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?sslmode=require"
 
-
 def create_telemetry_table():
     
     conn = psycopg2.connect(CONNECTION)

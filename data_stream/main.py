@@ -1,12 +1,19 @@
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
 import socket
 import asyncio
+import asyncpg
 import sys
 from pydantic import BaseModel
 from typing import Dict, Optional
 import uuid
 from ws import race_server, start_server, add_udp_port, cleanup_ws_port
+import psycopg2
+from dotenv import load_dotenv
+import os
 
+# Load environment variables
+load_dotenv()
+CONNECTION = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}?sslmode=require"
 app = FastAPI()
 
 class RaceResponse(BaseModel):
@@ -14,6 +21,10 @@ class RaceResponse(BaseModel):
     udp_port: int
     ws_port: int
     status: str
+
+class User(BaseModel):
+    username: str
+    password: str # hash later on type shit
 
 WS_PORT = 8765
 
@@ -48,14 +59,30 @@ def add_udp_server(udp_port: int):
     from ws import add_udp_port
     add_udp_port(udp_port)
 
+# Dependency for DB connection
+async def get_db():
+    conn = await asyncpg.connect(CONNECTION)
+    try:
+        yield conn
+    finally:
+        await conn.close()
+
 @app.on_event("startup")
 async def startup_event():
     await ensure_ws_server()
 
-@app.get("/")
-async def root():
-    return {"Hello" : "World"}
-
+@app.post("/create_user", response_model=User)
+async def create_user(user: User, db=Depends(get_db)):
+    try:
+        await db.execute(
+            "INSERT INTO users (username, password) VALUES ($1, $2)",
+            user.username,
+            user.password  # Hash password in production!
+        )
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") 
+    
 active_races: Dict[str, RaceResponse] = {}
 @app.post("/create_race")
 async def create_race() -> RaceResponse:
