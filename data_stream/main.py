@@ -52,6 +52,10 @@ def add_udp_server(udp_port: int):
 async def startup_event():
     await ensure_ws_server()
 
+@app.get("/")
+async def root():
+    return {"Hello" : "World"}
+
 active_races: Dict[str, RaceResponse] = {}
 @app.post("/create_race")
 async def create_race() -> RaceResponse:
