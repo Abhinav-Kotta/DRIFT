@@ -45,51 +45,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
-WS_PORT = 8765
-
-def get_available_port():
-    """Get an available port for UDP"""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        s.listen(5)
-        return s.getsockname()[1]
-
-async def ensure_ws_server():
-    """Start the WebSocket server if it's not running"""
-    try:
-        from ws import start_server, cleanup_ws_port
-        
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex(('127.0.0.1', WS_PORT))
-        sock.close()
-        
-        if result == 0:
-            print("WebSocket server already running")
-        else:
-            print("Starting WebSocket server")
-            cleanup_ws_port()
-            await start_server()
-            
-    except Exception as e:
-        print(f"Error ensuring WebSocket server: {str(e)}")
-        raise
-
-def add_udp_server(udp_port: int):
-    from ws import add_udp_port
-    add_udp_port(udp_port)
-
-# Dependency for DB connection
-async def get_db():
-    conn = await asyncpg.connect(CONNECTION)
-    try:
-        yield conn
-    finally:
-        await conn.close()
-
-@app.on_event("startup")
-async def startup_event():
-    await ensure_ws_server()
-
 @app.post("/create_user")
 async def create_user(user: NewUser, db=Depends(get_db)):
     hashed_password = hash_password(user.password)
@@ -157,6 +112,50 @@ async def delete_user(username: str, db=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+WS_PORT = 8765
+
+def get_available_port():
+    """Get an available port for UDP"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        s.listen(5)
+        return s.getsockname()[1]
+
+async def ensure_ws_server():
+    """Start the WebSocket server if it's not running"""
+    try:
+        from ws import start_server, cleanup_ws_port
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex(('127.0.0.1', WS_PORT))
+        sock.close()
+        
+        if result == 0:
+            print("WebSocket server already running")
+        else:
+            print("Starting WebSocket server")
+            cleanup_ws_port()
+            await start_server()
+            
+    except Exception as e:
+        print(f"Error ensuring WebSocket server: {str(e)}")
+        raise
+
+def add_udp_server(udp_port: int):
+    from ws import add_udp_port
+    add_udp_port(udp_port)
+
+# Dependency for DB connection
+async def get_db():
+    conn = await asyncpg.connect(CONNECTION)
+    try:
+        yield conn
+    finally:
+        await conn.close()
+
+@app.on_event("startup")
+async def startup_event():
+    await ensure_ws_server()
     
 active_races: Dict[str, RaceResponse] = {}
 @app.post("/create_race")
