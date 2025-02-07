@@ -10,6 +10,7 @@ from ws import race_server, start_server, add_udp_port, cleanup_ws_port
 import psycopg2
 from dotenv import load_dotenv
 import os
+import bcrypt
 
 # Load environment variables
 load_dotenv()
@@ -24,7 +25,25 @@ class RaceResponse(BaseModel):
 
 class User(BaseModel):
     username: str
-    password: str # hash later on type shit
+    password: str
+
+class NewUser(BaseModel):
+    username: str
+    password: str
+    security_question: str
+    security_answer: str
+
+class ResetPasswordRequest(BaseModel):
+    username: str
+    security_answer: str
+    new_password: str
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode(), salt).decode()
+
+def verify_password(plain_password, hashed_password):
+    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
 
 WS_PORT = 8765
 
@@ -71,17 +90,73 @@ async def get_db():
 async def startup_event():
     await ensure_ws_server()
 
-@app.post("/create_user", response_model=User)
-async def create_user(user: User, db=Depends(get_db)):
+@app.post("/create_user")
+async def create_user(user: NewUser, db=Depends(get_db)):
+    hashed_password = hash_password(user.password)
+    hashed_answer = hash_password(user.security_answer.lower())
+
     try:
         await db.execute(
-            "INSERT INTO users (username, password) VALUES ($1, $2)",
-            user.username,
-            user.password  # Hash password in production!
+            "INSERT INTO users (username, password, security_question, security_answer) VALUES ($1, $2, $3, $4)",
+            user.username, hashed_password, user.security_question, hashed_answer
         )
-        return user
+        return {"status": "success", "message": "User created successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@app.post("/login")
+async def login(user: User, db=Depends(get_db)):
+    try:
+        result = await db.fetchrow("SELECT password FROM users WHERE username = $1", user.username)
+
+        if not result:
+            raise HTTPException(status_code=401, detail="Invalid username")
+
+        stored_hashed_password = result["password"]
+
+        if not verify_password(user.password, stored_hashed_password):
+            raise HTTPException(status_code=401, detail="Invalid password")
+
+        return {"status": "success", "message": "Login successful"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+
+@app.post("/reset_password")
+async def reset_password(request: ResetPasswordRequest, db=Depends(get_db)):
+    try:
+        result = await db.fetchrow("SELECT security_answer FROM users WHERE username = $1", request.username)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        stored_hashed_answer = result["security_answer"]
+
+        # Verify the security answer
+        if not verify_password(request.security_answer.lower(), stored_hashed_answer):
+            raise HTTPException(status_code=401, detail="Incorrect security answer")
+
+        hashed_new_password = hash_password(request.new_password)
+        await db.execute("UPDATE users SET password = $1 WHERE username = $2", hashed_new_password, request.username)
+
+        return {"status": "success", "message": "Password reset successful"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reset failed: {str(e)}")
+    
+@app.delete("/delete_user")
+async def delete_user(username: str, db=Depends(get_db)):
+    try:
+        result = await db.execute("DELETE FROM users WHERE username = $1", username)
+        print(result)
+        # Check if a user was actually deleted
+        if result == "DELETE 0":
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return {"status": "success", "message": f"User '{username}' deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
     
 active_races: Dict[str, RaceResponse] = {}
 @app.post("/create_race")
