@@ -38,6 +38,14 @@ class ResetPasswordRequest(BaseModel):
     security_answer: str
     new_password: str
 
+# Dependency for DB connection
+async def get_db():
+    conn = await asyncpg.connect(CONNECTION)
+    try:
+        yield conn
+    finally:
+        await conn.close()
+
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode(), salt).decode()
@@ -144,14 +152,6 @@ async def ensure_ws_server():
 def add_udp_server(udp_port: int):
     from ws import add_udp_port
     add_udp_port(udp_port)
-
-# Dependency for DB connection
-async def get_db():
-    conn = await asyncpg.connect(CONNECTION)
-    try:
-        yield conn
-    finally:
-        await conn.close()
 
 @app.on_event("startup")
 async def startup_event():
