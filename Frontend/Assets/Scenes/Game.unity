@@ -1687,8 +1687,18 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
+<<<<<<< HEAD
   m_TargetGraphic: {fileID: 829610603}
   m_OnClick:
+=======
+  m_TargetGraphic: {fileID: 1322085115}
+  m_HandleRect: {fileID: 1322085114}
+  m_Direction: 2
+  m_Value: 1.0000002
+  m_Size: 0.61000013
+  m_NumberOfSteps: 0
+  m_OnValueChanged:
+>>>>>>> a70277ab4d412e252c0520697dc0ec55fb450f7c
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &829610603
@@ -2559,6 +2569,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
+<<<<<<< HEAD
   m_TargetGraphic: {fileID: 1239953464}
   m_TextViewport: {fileID: 1097533183}
   m_TextComponent: {fileID: 1834651679}
@@ -2596,6 +2607,14 @@ MonoBehaviour:
   m_OnEndTextSelection:
     m_PersistentCalls:
       m_Calls: []
+=======
+  m_TargetGraphic: {fileID: 516074651}
+  m_HandleRect: {fileID: 516074650}
+  m_Direction: 0
+  m_Value: 0
+  m_Size: 1
+  m_NumberOfSteps: 0
+>>>>>>> a70277ab4d412e252c0520697dc0ec55fb450f7c
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
