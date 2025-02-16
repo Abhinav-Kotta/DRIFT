@@ -3,6 +3,14 @@ using UnityEngine.Networking;
 using System.Threading.Tasks;
 using System;
 using NativeWebSocket;
+using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+
 
 [Serializable]
 public class RaceResponse
@@ -14,16 +22,31 @@ public class RaceResponse
 }
 
 [Serializable]
-public class TelemetryData
+public class RaceListResponse
 {
+    public RaceEntry[] races;
+}
+
+[Serializable]
+public class RaceEntry
+{
+    public string race_id;
+    public RaceResponse value;
+}
+
+[Serializable]
+public class DroneData
+{
+    public object drone_id;
     public float timestamp;
     public Position position;
     public Attitude attitude;
     public Vector3Data velocity;
     public GyroData gyro;
-    public InputData input;
-    public BatteryData battery;
-    public float[] motor_rpm;
+    public Inputs inputs;
+    public Battery battery;
+    public int motor_count;
+    public float[] motor_rpms;
 }
 
 [Serializable]
@@ -60,7 +83,7 @@ public class GyroData
 }
 
 [Serializable]
-public class InputData
+public class Inputs
 {
     public float throttle;
     public float yaw;
@@ -69,131 +92,65 @@ public class InputData
 }
 
 [Serializable]
-public class BatteryData
+public class Battery
 {
-    public float voltage;
     public float percentage;
+    public float voltage;
 }
 
 public class RaceClient : MonoBehaviour
 {
     [SerializeField]
-    private string baseApiUrl = "http://34.68.252.128:8000";
-    
-    private RaceResponse currentRace;
+    private string baseApiUrl = "http://104.197.175.117:8000";
     private WebSocket websocket;
-    private bool isConnected = false;
-
-    [SerializeField]
-    private TMPro.TextMeshProUGUI batteryText;
-    [SerializeField]
-    private TMPro.TextMeshProUGUI motorRpmText;
+    private RaceResponse currentRace;
+    private bool isListening = false;
 
     async void Start()
     {
-        RaceResponse newRace = await CreateRace();
-        if (newRace != null)
-        {
-            await ConnectToRace(newRace);
-        }
+        Debug.Log("RaceClient Start() called");
+        await InitializeRaceConnection();
     }
 
-    async Task ConnectToRace(RaceResponse race)
+    async Task InitializeRaceConnection()
     {
         try
         {
-            string wsUrl = $"ws://{new Uri(baseApiUrl).Host}:8000/ws/race/{race.race_id}";
-            websocket = new WebSocket(wsUrl);
+            Debug.Log("Starting race connection initialization...");
 
-            websocket.OnOpen += () =>
+            currentRace = await ListRaces();
+
+            if (currentRace == null)
             {
-                isConnected = true;
-            };
+                Debug.Log("No races found, creating a new race...");
+                await CreateRace();  // Create a race but don't store the response
 
-            websocket.OnMessage += (bytes) =>
-            {
-                string message = System.Text.Encoding.UTF8.GetString(bytes);
-                HandleRaceData(message);
-            };
-
-            websocket.OnError += (e) =>
-            {
-                Debug.LogError($"WebSocket Error: {e}");
-            };
-
-            websocket.OnClose += (e) =>
-            {
-                isConnected = false;
-            };
-
-            await websocket.Connect();
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error connecting to websocket: {e.Message}");
-        }
-    }
-
-    void HandleRaceData(string jsonData)
-    {
-        try
-        {
-            var telemetry = JsonUtility.FromJson<TelemetryData>(jsonData);
-            if (telemetry == null)
-            {
-                return;
-            }
-
-            transform.position = new Vector3(
-                telemetry.position.x,
-                telemetry.position.y,
-                telemetry.position.z
-            );
-
-            transform.rotation = new Quaternion(
-                telemetry.attitude.x,
-                telemetry.attitude.y,
-                telemetry.attitude.z,
-                telemetry.attitude.w
-            );
-
-            Rigidbody rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = new Vector3(
-                    telemetry.velocity.x,
-                    telemetry.velocity.y,
-                    telemetry.velocity.z
-                );
-            }
-
-            if (batteryText != null)
-            {
-                batteryText.text = $"Battery: {telemetry.battery.percentage:F1}% ({telemetry.battery.voltage:F1}V)";
-            }
-
-            if (motorRpmText != null && telemetry.motor_rpm != null)
-            {
-                string rpmText = "Motor RPM:";
-                for (int i = 0; i < telemetry.motor_rpm.Length; i++)
+                // Now get the list of races again and use the first one
+                currentRace = await ListRaces();
+                if (currentRace == null)
                 {
-                    rpmText += $"\nMotor {i + 1}: {telemetry.motor_rpm[i]:F0}";
+                    Debug.LogError("Failed to get race after creation");
+                    return;
                 }
-                motorRpmText.text = rpmText;
             }
+
+            Debug.Log($"Using race with ID: {currentRace.race_id}");
+
+            // Connect to the WebSocket for this race
+            await ConnectToRaceWebSocket(currentRace.race_id);
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error parsing telemetry data: {e.Message}\nRaw data: {jsonData}");
+            Debug.LogError($"Critical error in InitializeRaceConnection: {e.Message}\nStack trace: {e.StackTrace}");
         }
     }
 
-    public async Task<RaceResponse> CreateRace()
+    public async Task<RaceResponse> ListRaces()
     {
         try
         {
-            string createUrl = $"{baseApiUrl}/create_race";
-            using (UnityWebRequest request = UnityWebRequest.PostWwwForm(createUrl, ""))
+            string listUrl = $"{baseApiUrl}/list_races";
+            using (UnityWebRequest request = UnityWebRequest.Get(listUrl))
             {
                 var operation = request.SendWebRequest();
                 while (!operation.isDone)
@@ -201,18 +158,173 @@ public class RaceClient : MonoBehaviour
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
+                    Debug.LogError($"Error fetching races: {request.error}");
                     return null;
                 }
 
                 string jsonResponse = request.downloadHandler.text;
-                currentRace = JsonUtility.FromJson<RaceResponse>(jsonResponse);
-                return currentRace;
+                Debug.Log($"Received races response: {jsonResponse}");
+
+                try
+                {
+                    // Parse the outer response
+                    JObject response = JObject.Parse(jsonResponse);
+                    JArray races = (JArray)response["races"];
+
+                    if (races != null && races.Count > 0)
+                    {
+                        // Get the first race object
+                        JObject firstRaceContainer = (JObject)races[0];
+                        // Get the first property of that object (the race ID and its data)
+                        JProperty raceProp = firstRaceContainer.Properties().First();
+                        // Get the race data
+                        JObject raceData = (JObject)raceProp.Value;
+
+                        return new RaceResponse
+                        {
+                            race_id = (string)raceData["race_id"],
+                            udp_port = (int)raceData["udp_port"],
+                            ws_port = (int)raceData["ws_port"],
+                            status = (string)raceData["status"]
+                        };
+                    }
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error parsing race list: {e.Message}");
+                    Debug.LogError($"JSON response was: {jsonResponse}");
+                    return null;
+                }
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error creating race: {e.Message}");
+            Debug.LogError($"Error listing races: {e.Message}");
             return null;
+        }
+    }
+
+    async Task<RaceResponse> CreateRace()
+    {
+        string createUrl = $"{baseApiUrl}/create_race";
+        Debug.Log($"Attempting to create race at: {createUrl}");
+
+        try
+        {
+            using (UnityWebRequest request = new UnityWebRequest(createUrl, "POST"))
+            {
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.uploadHandler = new UploadHandlerRaw(new byte[0]);
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                var operation = request.SendWebRequest();
+                while (!operation.isDone)
+                {
+                    await Task.Yield();
+                }
+
+                if (request.result != UnityWebRequest.Result.Success)
+                {
+                    return null;
+                }
+
+                string responseText = request.downloadHandler.text;
+                Debug.Log($"Received response: {responseText}");
+
+                try
+                {
+                    Debug.Log("in here");
+                    var response = JsonUtility.FromJson<RaceResponse>(responseText);
+                    Debug.Log($"Create race response: {JsonUtility.ToJson(response)}");
+
+
+                    if (response == null)
+                    {
+                        Debug.LogError("Failed to parse JSON response");
+                        Debug.LogError($"Raw response: {responseText}");
+                    }
+                    return response;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"JSON parsing error: {e.Message}");
+                    Debug.LogError($"Raw response that failed to parse: {responseText}");
+                    return null;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Exception in CreateRace: {e.Message}");
+            Debug.LogError($"Stack trace: {e.StackTrace}");
+            return null;
+        }
+    }
+
+    async Task ConnectToRaceWebSocket(string raceId)
+    {
+        try
+        {
+            string wsUrl = $"ws://104.197.175.117:8765/race/{currentRace.udp_port}";
+            Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
+            Debug.Log($"[WS] Race info:");
+            Debug.Log($"    - Race ID: {currentRace.race_id}");
+            Debug.Log($"    - UDP Port: {currentRace.udp_port}");
+            Debug.Log($"    - Status: {currentRace.status}");
+
+            websocket = new WebSocket(wsUrl);
+            Debug.Log($"[WS] WebSocket instance created with State: {websocket.State}");
+
+            websocket.OnOpen += () =>
+            {
+                Debug.Log("[WS] OnOpen event fired!");
+                isListening = true;
+            };
+
+            websocket.OnError += (e) =>
+            {
+                Debug.LogError($"[WS] WebSocket Error: {e}");
+                Debug.LogError($"[WS] Current State: {websocket.State}");
+                isListening = false;
+            };
+
+            websocket.OnClose += (e) =>
+            {
+                Debug.Log($"[WS] WebSocket connection closed with State: {websocket.State}");
+                isListening = false;
+            };
+
+            websocket.OnMessage += (bytes) =>
+            {
+                Debug.Log("[WS] OnMessage event fired");
+                try
+                {
+                    var message = Encoding.UTF8.GetString(bytes);
+                    Debug.Log($"[WS] Received message length: {bytes.Length}");
+                    Debug.Log($"[WS] Decoded message: {message}");
+
+                    var droneData = JsonConvert.DeserializeObject<DroneData>(message);
+                    Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[WS] Error processing message: {e.Message}");
+                }
+            };
+
+            Debug.Log("[WS] About to call Connect()...");
+            await websocket.Connect();
+            Debug.Log($"[WS] Connect() completed with State: {websocket.State}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[WS] Failed to connect to WebSocket: {e.Message}");
+            Debug.LogError($"[WS] Stack trace: {e.StackTrace}");
+            if (websocket != null)
+            {
+                Debug.LogError($"[WS] Final WebSocket State: {websocket.State}");
+            }
         }
     }
 
@@ -224,9 +336,9 @@ public class RaceClient : MonoBehaviour
         }
     }
 
-    private async void OnApplicationQuit()
+    private async void OnDestroy()
     {
-        if (websocket != null && isConnected)
+        if (websocket != null)
         {
             await websocket.Close();
         }
