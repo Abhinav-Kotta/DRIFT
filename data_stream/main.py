@@ -1,16 +1,17 @@
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, HTTPException, Depends
 import socket
 import asyncio
 import asyncpg
-import sys
 from pydantic import BaseModel
-from typing import Dict, Optional
+from typing import Dict, List
 import uuid
-from ws import race_server, start_server, add_udp_port, cleanup_ws_port
-import psycopg2
+from ws import race_server
 from dotenv import load_dotenv
 import os
 import bcrypt
+import uvicorn
+
+WS_PORT = 8765
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +23,9 @@ class RaceResponse(BaseModel):
     udp_port: int
     ws_port: int
     status: str
+
+class RaceListResponse(BaseModel):
+    races: List[Dict[str, RaceResponse]]
 
 class User(BaseModel):
     username: str
@@ -119,16 +123,14 @@ async def delete_user(username: str, db=Depends(get_db)):
         return {"status": "success", "message": f"User '{username}' deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-WS_PORT = 8765
-
-def get_available_port():
-    """Get an available port for UDP"""
+    
+def get_available_port() -> int:
+    """Get an available port for UDP server"""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('', 0))
-        s.listen(5)
+        s.listen(1)
         return s.getsockname()[1]
-
+    
 async def ensure_ws_server():
     """Start the WebSocket server if it's not running"""
     try:
@@ -164,66 +166,41 @@ async def shutdown_event():
     await asyncio.sleep(0.1)  # Give time for cleanup
     
 active_races: Dict[str, RaceResponse] = {}
+
 @app.post("/create_race")
-async def create_race() -> RaceResponse:
+async def create_race() -> Dict[str, RaceResponse]:
     udp_port = get_available_port()
     race_id = str(uuid.uuid4())
     
     try:
-        add_udp_server(udp_port)
+        race_server.add_udp_server(udp_port)
         race_response = RaceResponse(
             race_id=race_id,
             udp_port=udp_port,
-            ws_port=WS_PORT,  
+            ws_port=WS_PORT,
             status="started"
         )
         active_races[race_id] = race_response
-        return race_response
+        return {race_id: race_response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start race server: {str(e)}")
-    
-@app.websocket("/ws/race/{race_id}")
-async def websocket_endpoint(websocket: WebSocket, race_id: str):
-    if race_id not in active_races:
-        await websocket.close(code=4004, reason="Race not found")
-
-    race_info = active_races[race_id]
-    udp_port = race_info.udp_port
-
-    try:
-        await websocket.accept()
-
-        if udp_port not in race_server.race_clients:
-            race_server.race_clients[udp_port] = set()
-        race_server.race_clients[udp_port].add(websocket)
-        print(race_server.race_clients)
-
-        try:
-            while True:
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            race_server.race_clients[udp_port].remove(websocket)
-    except Exception as e:
-        print(f"Error in websocket connection {str(e)}")
-        if udp_port in race_server.race_clients and websocket in race_server.race_clients[udp_port]:
-            race_server.race_clients[udp_port].remove(websocket)
     
 @app.get("/watch_race/{race_id}")
 async def watch_race(race_id: str) -> RaceResponse:
     if race_id not in active_races:
         raise HTTPException(status_code=404, detail="Race not found")
-    
-    race_info = active_races[race_id]
-    return race_info
+    return active_races[race_id]
 
 @app.get("/list_races")
-async def list_races() -> Dict[str, RaceResponse]:
-    return active_races
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    pass
+async def list_races() -> RaceListResponse:
+    race_list = [{k: v} for k, v in active_races.items()]
+    return RaceListResponse(races=race_list)
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        reload=True
+    )

@@ -10,9 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
 from typing import Dict, Set
-from telemetry_parser import create_udp_server
 
-WS_PORT = 8765 
+WS_PORT = 8765
 
 @dataclass
 class RaceMessage:
@@ -47,31 +46,51 @@ class RaceServer:
         self.udp_servers: Dict[int, socket.socket] = {}
         self.shutdown_event = asyncio.Event()
 
-    async def websocket_handler(self, websocket, path):
-        race_port = int(path.split('/')[-1])
+    async def websocket_handler(self, connection):
+        """Handle WebSocket connections with a single connection parameter"""
         try:
+            # Debug print to see what we're receiving
+            print(f"Debug - Connection attributes: {connection.__dict__}")
+            path = connection.request.path
+            path_parts = path.strip('/').split('/')
+            
+            if len(path_parts) != 2 or path_parts[0] != 'race':
+                await connection.close(1008, "Invalid path format")
+                return
+                
+            race_port = int(path_parts[1])
             if race_port not in self.race_clients:
                 self.race_clients[race_port] = set()
-            self.race_clients[race_port].add(websocket)
+            
+            self.race_clients[race_port].add(connection)
             print(f"Client connected to race on UDP port {race_port}")
-            await websocket.wait_closed()
-        finally:
-            if race_port in self.race_clients:
-                self.race_clients[race_port].remove(websocket)
-                print(f"Client disconnected from race on UDP port {race_port}")
+            
+            try:
+                await connection.wait_closed()
+            finally:
+                if race_port in self.race_clients:
+                    self.race_clients[race_port].remove(connection)
+                    print(f"Client disconnected from race on UDP port {race_port}")
+                    
+        except (ValueError, IndexError) as e:
+            print(f"Error processing WebSocket path: {e}")
+            await connection.close(1008, "Invalid path format")
     
     async def start_ws_server(self):
-        # Check if port is in use and clean up if necessary
+        print("Starting start_ws_server method")
+        
         if not is_port_available(WS_PORT):
             print(f"Port {WS_PORT} is in use. Attempting cleanup...")
             cleanup_ws_port()
-            await asyncio.sleep(1)  # Give time for cleanup
+            await asyncio.sleep(1)
             
             if not is_port_available(WS_PORT):
                 raise RuntimeError(f"Could not secure port {WS_PORT} for WebSocket server")
 
+        print("About to start WebSocket server")
         self.ws_server = await websockets.serve(self.websocket_handler, "0.0.0.0", WS_PORT)
         print(f"WebSocket server started on port {WS_PORT}", flush=True)
+        
         return WS_PORT
 
     def start_udp_server(self, udp_port: int):
@@ -129,7 +148,7 @@ class RaceServer:
         asyncio.get_event_loop().run_in_executor(None, self.start_udp_server, udp_port)
 
     async def broadcast_worker(self):
-        while not self.shutdown_event.is_set():  # EXIT when shutdown_event is set
+        while not self.shutdown_event.is_set():
             try:
                 while not self.message_queue.empty():
                     msg = self.message_queue.get()
