@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import os
 import bcrypt
 import uvicorn
+import json
 
 WS_PORT = 8765
 
@@ -41,6 +42,11 @@ class ResetPasswordRequest(BaseModel):
     username: str
     security_answer: str
     new_password: str
+
+class SaveRaceRequest(BaseModel):
+    race_name: str
+    drift_map: str
+    user_id: str
 
 # Dependency for DB connection
 async def get_db():
@@ -84,8 +90,9 @@ async def login(user: User, db=Depends(get_db)):
 
         if not verify_password(user.password, stored_hashed_password):
             raise HTTPException(status_code=401, detail="Invalid password")
-
-        return {"status": "success", "message": "Login successful"}
+        
+        u_id = await db.fetchrow("SELECT id FROM users WHERE username = $1", user.username)
+        return {"status": "success", "message": "Login successful", "user_id": u_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
@@ -164,6 +171,15 @@ async def shutdown_event():
     print("Shutting down WebSocket and broadcast worker...")
     race_server.shutdown_event.set()  # SIGNAL broadcast_worker to stop
     await asyncio.sleep(0.1)  # Give time for cleanup
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    for task in tasks:
+        task.cancel()
+    try:
+        await asyncio.gather(*tasks, return_exceptions=True)
+    except asyncio.CancelledError:
+        print("CancelledError caught during shutdown.")  # Suppress error
+    finally:
+        print("Application shutdown complete.")
     
 active_races: Dict[str, RaceResponse] = {}
 
@@ -196,11 +212,38 @@ async def list_races() -> RaceListResponse:
     race_list = [{k: v} for k, v in active_races.items()]
     return RaceListResponse(races=race_list)
 
+@app.post("/save_race/{race_id}")
+async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
+    try:
+        # Get the cached race data
+        race_data = race_server.race_cache
+
+        if not race_data:
+            raise HTTPException(status_code=404, detail="No race data available to save")
+
+        # Convert the cached data to JSON string
+        race_json = json.dumps(race_data)
+
+        # Insert into the 'races' table
+        await db.execute(
+            "INSERT INTO races (race_id, race_name, drift_map, user_id, flight_packet) VALUES ($1, $2, $3, $4, $5)",
+            race_id, input.race_name, input.drift_map, input.user_id, race_json  # Replace placeholders with actual data
+        )
+
+        # Clear the cache after saving
+        race_server.race_cache.clear()
+
+        return {"status": "success", "message": "Race data saved successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving race data: {str(e)}")
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
         log_level="info",
-        reload=True
+        reload=True,
+        timeout_graceful_shutdown=5
     )
