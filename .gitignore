@@ -1,3 +1,6 @@
+data_stream/venv
+data_stream/.env
+
 # Unity/Frontend Ignore specs
 #
 # 

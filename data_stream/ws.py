@@ -10,6 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
 from typing import Dict, Set
+from pympler import asizeof # remove this bitch later
+import sys # remove this bitch later
 
 WS_PORT = 8765
 
@@ -45,6 +47,7 @@ class RaceServer:
         self.message_queue = Queue()
         self.udp_servers: Dict[int, socket.socket] = {}
         self.shutdown_event = asyncio.Event()
+        self.race_cache = [] # stores all of the packets
 
     async def websocket_handler(self, connection):
         """Handle WebSocket connections with a single connection parameter"""
@@ -70,6 +73,9 @@ class RaceServer:
             finally:
                 if race_port in self.race_clients:
                     self.race_clients[race_port].remove(connection)
+                    print(f"Current race cache length: {len(self.race_cache)}")
+                    print(f"Race cache size in bytes: {sys.getsizeof(self.race_cache)}")
+                    print(f"Race cache size in bytes (including contents): {asizeof.asizeof(self.race_cache)}")
                     print(f"Client disconnected from race on UDP port {race_port}")
                     
         except (ValueError, IndexError) as e:
@@ -105,7 +111,7 @@ class RaceServer:
             try:
                 data, addr = udp_server.recvfrom(4096)
                 drone_id = addr
-                print(f"Received UDP packet from {addr}, size: {len(data)} bytes")
+                # print(f"Received UDP packet from {addr}, size: {len(data)} bytes")
                 
                 if len(data) >= 81:
                     try:
@@ -135,7 +141,8 @@ class RaceServer:
                         }
 
                         message = json.dumps(drone_data, indent=4)
-                        print(f"Debug - Parsed Drone Data:\n{message}")
+                        # print(f"Debug - just parsed packet")
+                        # print(f"Debug - Parsed Drone Data:\n{message}")
                         self.message_queue.put(RaceMessage(udp_port, message))
                     except struct.error as e:
                         print(f"Error unpacking position data: {e}")
@@ -152,6 +159,7 @@ class RaceServer:
             try:
                 while not self.message_queue.empty():
                     msg = self.message_queue.get()
+                    self.race_cache.append(msg.data) # caches packet
                     if msg.port in self.race_clients:
                         disconnected = set()
                         for client in self.race_clients[msg.port]:
