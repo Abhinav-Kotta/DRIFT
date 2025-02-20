@@ -12,21 +12,24 @@ public class CreateAccountScript : MonoBehaviour
     private TMP_InputField passwordField;
     private TMP_InputField securityQuestionField;
     private TMP_InputField securityAnswerField;
+    private string apiUrl;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         submitButton = GetComponent<Button>();
         submitButton.onClick.AddListener(OnSubmitClicked);
+        apiUrl = ConfigLoader.GetApiUrl();
+        Debug.Log(apiUrl);
 
         usernameField = GameObject.Find("Username").GetComponent<TMP_InputField>();
         passwordField = GameObject.Find("Password").GetComponent<TMP_InputField>();
         securityQuestionField = GameObject.Find("SecurityQDropdown").GetComponent<TMP_InputField>();
         securityAnswerField = GameObject.Find("SecurityQInput").GetComponent<TMP_InputField>();
 
-        if (usernameField == null || passwordField == null || securityQuestionField == null || securityAnswerField == null)
+        if (usernameField == null || passwordField == null || securityQuestionField == null || securityAnswerField == null || apiUrl == null)
         {
-            Debug.LogError("Username, password, security question, or security answer field not found");
+            Debug.LogError("apiUrl, Username, password, security question, or security answer field not found");
         }
         
     }
@@ -41,7 +44,7 @@ public class CreateAccountScript : MonoBehaviour
     {
         string jsonPayload = $"{{\"username\":\"{usernameField.text}\",\"password\":\"{passwordField.text}\",\"security_question\":\"{securityQuestionField.text}\",\"security_answer\":\"{securityAnswerField.text}\"}}";
 
-        UnityWebRequest www = new UnityWebRequest("http://34.68.252.128:8000/create_user", "POST");
+        UnityWebRequest www = new UnityWebRequest($"{apiUrl}/create_user", "POST");
         
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
         

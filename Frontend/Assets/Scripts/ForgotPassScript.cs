@@ -11,19 +11,22 @@ public class ForgotPassScript : MonoBehaviour
     private TMP_InputField usernameField;
     private TMP_InputField securityAnswerField;
     private TMP_InputField newPasswordField;
+    private string apiUrl;
 
     void Start()
     {
+
         submitButton = GetComponent<Button>();
         submitButton.onClick.AddListener(OnSubmitClicked);
+        apiUrl = ConfigLoader.GetApiUrl();
 
         usernameField = GameObject.Find("Username").GetComponent<TMP_InputField>();
         securityAnswerField = GameObject.Find("SecurityA").GetComponent<TMP_InputField>();
         newPasswordField = GameObject.Find("NewPassword").GetComponent<TMP_InputField>();
 
-        if (usernameField == null || securityAnswerField == null || newPasswordField == null)
+        if (usernameField == null || securityAnswerField == null || newPasswordField == null || apiUrl == null)
         {
-            Debug.LogError("Username, security answer, or new password field not found");
+            Debug.LogError("apiUrl, Username, security answer, or new password field not found");
         }
     }
 
@@ -36,7 +39,7 @@ public class ForgotPassScript : MonoBehaviour
     {
         string jsonPayload = $"{{\"username\":\"{usernameField.text}\",\"security_answer\":\"{securityAnswerField.text}\",\"new_password\":\"{newPasswordField.text}\"}}";
 
-        UnityWebRequest www = new UnityWebRequest("http://34.68.252.128:8000/reset_password", "POST");
+        UnityWebRequest www = new UnityWebRequest($"{apiUrl}/reset_password", "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
         www.uploadHandler = new UploadHandlerRaw(bodyRaw);
         www.downloadHandler = new DownloadHandlerBuffer();

@@ -48,6 +48,7 @@ Frontend/*.pdb
 Frontend/*.mdb
 Frontend/*.opendb
 Frontend/*.VC.db
+Frontend/Assets/Resources/json.config
 
 # Unity3D generated meta files
 Frontend/*.pidb.meta

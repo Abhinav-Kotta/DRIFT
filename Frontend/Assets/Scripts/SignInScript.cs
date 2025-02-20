@@ -10,11 +10,15 @@ public class SignInScript : MonoBehaviour
     private Button signInButton;
     private TMP_InputField usernameField;
     private TMP_InputField passwordField;
-
+    private string apiUrl;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        apiUrl = ConfigLoader.GetApiUrl();
+        if (apiUrl == null)
+        {
+            Debug.LogError("apiUrl not found");
+        }
         signInButton = GetComponent<Button>();
         signInButton.onClick.AddListener(OnSignInClicked);
 
@@ -38,7 +42,7 @@ public class SignInScript : MonoBehaviour
     {
         string jsonPayload = $"{{\"username\":\"{usernameField.text}\",\"password\":\"{passwordField.text}\"}}";
 
-        UnityWebRequest www = new UnityWebRequest("http://34.68.252.128:8000/login", "POST");
+        UnityWebRequest www = new UnityWebRequest($"{apiUrl}/login", "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
         www.uploadHandler = new UploadHandlerRaw(bodyRaw);
         www.downloadHandler = new DownloadHandlerBuffer();
