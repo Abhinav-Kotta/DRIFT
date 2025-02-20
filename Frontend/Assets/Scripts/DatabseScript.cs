@@ -4,15 +4,22 @@ using System.Collections;
 
 public class DatabaseScript : MonoBehaviour
 {
+    private string apiUrl;
     void Start()
     {
+        apiUrl = ConfigLoader.GetApiUrl();
+        if (apiUrl == null)
+        {
+            Debug.LogError("apiUrl not found");
+        }
+
         Debug.Log("Starting to fetch drone data...");
         StartCoroutine(GetDroneData());
     }
 
     IEnumerator GetDroneData()
     {
-        string uri = "http://127.0.0.1:5000/telemetry";
+        string uri = $"{apiUrl}/telemetry";
         Debug.Log("Attempting to connect to: " + uri);
 
         using (UnityWebRequest uwr = UnityWebRequest.Get(uri))

@@ -5,7 +5,7 @@ public class MenuManager : MonoBehaviour
 {
     public void StartingGame()
     {
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("Game");
     }
 
     public void ImportFile()
