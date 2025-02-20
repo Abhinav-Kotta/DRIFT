@@ -12,10 +12,11 @@ public class DroneMover : MonoBehaviour
 
     //testing porpuses. Used to simulate movement rolling and pitching behavior
     public float angle = 0f;
-
+    
     //artificial speed of the drone for testing
     [SerializeField] [Range(0,20)] private float artificalSpeed = 10f;
 
+    private float DID; //Drone ID. Used for filter through total data for movement.
     //initial position of the drone, Used only for simulating movement
     private float initX;
     private float initY;
@@ -33,7 +34,7 @@ public class DroneMover : MonoBehaviour
 
     //Used for rotating propeller. Measured in rotations per minute??
     [SerializeField] [Range(0, 5000)] int motorSpeed1 = 0;  //Measured in rotations per minute??
-    [SerializeField] [Range(0, 5000)] int motorSpeed2 = 0;
+    [SerializeField] [Range(0, 5000)] int motorSpeed2 = 0;  
     [SerializeField] [Range(0, 5000)] int motorSpeed3 = 0;
     [SerializeField] [Range(0, 5000)] int motorSpeed4 = 0;
 
