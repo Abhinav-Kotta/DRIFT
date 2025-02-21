@@ -44,10 +44,17 @@ def is_port_available(port: int) -> bool:
 class RaceServer:
     def __init__(self):
         self.race_clients: Dict[int, Set[websockets.WebSocketServerProtocol]] = {}
-        self.message_queue = Queue()
+        self.race_queues: Dict[int, Queue] = {}  # Separate queue per race
         self.udp_servers: Dict[int, socket.socket] = {}
         self.shutdown_event = asyncio.Event()
-        self.race_cache = [] # stores all of the packets
+        self.race_caches: Dict[int, List[str]] = {}  # Separate cache per race
+        self.race_id_to_port: Dict[str, int] = {}  # Map race_id to UDP port
+
+    def map_race_id_to_port(self, race_id: str, udp_port: int):
+        """Stores a mapping of race_id (UUID) to udp_port and initializes a queue"""
+        self.race_id_to_port[race_id] = udp_port
+        self.race_caches[udp_port] = []  # Initialize an empty cache for this race
+        self.race_queues[udp_port] = Queue()  # Create a dedicated queue per race
 
     async def websocket_handler(self, connection):
         """Handle WebSocket connections with a single connection parameter"""
@@ -73,9 +80,9 @@ class RaceServer:
             finally:
                 if race_port in self.race_clients:
                     self.race_clients[race_port].remove(connection)
-                    print(f"Current race cache length: {len(self.race_cache)}")
-                    print(f"Race cache size in bytes: {sys.getsizeof(self.race_cache)}")
-                    print(f"Race cache size in bytes (including contents): {asizeof.asizeof(self.race_cache)}")
+                    print(f"Current race cache length for UDP port {race_port}: {len(self.race_caches.get(race_port, []))}")
+                    print(f"Race cache size in bytes for UDP port {race_port}: {sys.getsizeof(self.race_caches.get(race_port, []))}")
+                    print(f"Race cache size in bytes (including contents) for UDP port {race_port}: {asizeof.asizeof(self.race_caches.get(race_port, []))}")
                     print(f"Client disconnected from race on UDP port {race_port}")
                     
         except (ValueError, IndexError) as e:
@@ -110,9 +117,6 @@ class RaceServer:
         while True:
             try:
                 data, addr = udp_server.recvfrom(4096)
-                drone_id = addr
-                # print(f"Received UDP packet from {addr}, size: {len(data)} bytes")
-                
                 if len(data) >= 81:
                     try:
                         unpacked_data = struct.unpack('<f 3f 4f 3f 3f 4f 2f B 4f', data)
@@ -128,7 +132,6 @@ class RaceServer:
                         motor_rpms = unpacked_data[21:]
 
                         drone_data = {
-                            "drone_id": drone_id,
                             "timestamp": timestamp,
                             "position": {"x": position[0], "y": position[1], "z": position[2]},
                             "attitude": {"x": attitude[0], "y": attitude[1], "z": attitude[2], "w": attitude[3]},
@@ -140,43 +143,50 @@ class RaceServer:
                             "motor_rpms": list(motor_rpms)
                         }
 
-                        message = json.dumps(drone_data, indent=4)
-                        # print(f"Debug - just parsed packet")
-                        # print(f"Debug - Parsed Drone Data:\n{message}")
-                        self.message_queue.put(RaceMessage(udp_port, message))
+                        message = json.dumps(drone_data)
+
+                        # Add message to the correct queue
+                        if udp_port in self.race_queues:
+                            self.race_queues[udp_port].put(RaceMessage(udp_port, message))
                     except struct.error as e:
                         print(f"Error unpacking position data: {e}")
-                else:
-                    print(f"Warning: Received packet with unexpected size: {len(data)} bytes")
             except Exception as e:
                 print(f"Error on UDP port {udp_port}: {str(e)}")
 
     def add_udp_server(self, udp_port: int):
+        if udp_port not in self.race_queues:
+            self.race_queues[udp_port] = Queue()
         asyncio.get_event_loop().run_in_executor(None, self.start_udp_server, udp_port)
 
     async def broadcast_worker(self):
         while not self.shutdown_event.is_set():
             try:
-                while not self.message_queue.empty():
-                    msg = self.message_queue.get()
-                    self.race_cache.append(msg.data) # caches packet
-                    if msg.port in self.race_clients:
-                        disconnected = set()
-                        for client in self.race_clients[msg.port]:
-                            try:
-                                if isinstance(msg.data, str):
+                for udp_port, queue in self.race_queues.items():
+                    while not queue.empty():
+                        msg = queue.get()
+
+                        # Ensure cache exists for this race
+                        if udp_port not in self.race_caches:
+                            self.race_caches[udp_port] = []
+
+                        # Store the message in the race-specific cache
+                        self.race_caches[udp_port].append(msg.data)
+
+                        # Send the message to all clients in the race
+                        if udp_port in self.race_clients:
+                            disconnected = set()
+                            for client in self.race_clients[udp_port]:
+                                try:
                                     await client.send(msg.data)
-                                else:
-                                    await client.send(json.dumps(msg.data))
-                            except websockets.exceptions.ConnectionClosed:
-                                disconnected.add(client)
-                                print(f"Client disconnected on port {msg.port}")
-                        self.race_clients[msg.port] -= disconnected
+                                except websockets.exceptions.ConnectionClosed:
+                                    disconnected.add(client)
+                            self.race_clients[udp_port] -= disconnected
                 await asyncio.sleep(0.001)
             except Exception as e:
                 import traceback
                 print(f"Error in broadcast worker: {str(e)}")
-                print(f"Full error traceback: {traceback.format_exc()}")
+                print(traceback.format_exc())
+
         print("Broadcast worker stopped.")
 
     async def main(self):
