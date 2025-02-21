@@ -188,9 +188,11 @@ active_races: Dict[str, RaceResponse] = {}
 async def create_race() -> Dict[str, RaceResponse]:
     udp_port = get_available_port()
     race_id = str(uuid.uuid4())
-    
+
     try:
         race_server.add_udp_server(udp_port)
+        race_server.map_race_id_to_port(race_id, udp_port)  # Initialize race queue
+
         race_response = RaceResponse(
             race_id=race_id,
             udp_port=udp_port,
@@ -201,6 +203,7 @@ async def create_race() -> Dict[str, RaceResponse]:
         return {race_id: race_response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start race server: {str(e)}")
+
     
 @app.get("/watch_race/{race_id}")
 async def watch_race(race_id: str) -> RaceResponse:
@@ -216,28 +219,89 @@ async def list_races() -> RaceListResponse:
 @app.post("/save_race/{race_id}")
 async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
     try:
-        race_data = race_server.race_cache
+        # Get the UDP port for this race ID
+        udp_port = race_server.race_id_to_port.get(race_id)
+
+        if udp_port is None:
+            raise HTTPException(status_code=404, detail=f"Race ID {race_id} not found")
+
+        # Fetch race data using the correct UDP port
+        race_data = race_server.race_caches.get(udp_port, [])
 
         if not race_data:
-            raise HTTPException(status_code=404, detail="No race data available to save")
+            raise HTTPException(status_code=404, detail=f"No race data available to save for race ID {race_id}")
 
         race_json = json.dumps(race_data)
         race_size_bytes = sys.getsizeof(race_json)
 
+        # Save the race data to the database
         await db.execute(
             "INSERT INTO races (race_id, race_name, drift_map, user_id, flight_packet, race_size_bytes) VALUES ($1, $2, $3, $4, $5, $6)",
             race_id, input.race_name, input.drift_map, input.user_id, race_json, race_size_bytes
         )
 
-        race_server.race_cache.clear()
+        # Clear only this race's cache
+        del race_server.race_caches[udp_port]
+
         return {
             "status": "success",
-            "message": "Race data saved successfully",
+            "message": f"Race {race_id} data saved successfully",
             "race_size_bytes": race_size_bytes
         }
 
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid race ID format")
     except Exception as e:
+        import traceback
+        print(f"Error saving race data: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error saving race data: {str(e)}")
+    
+@app.delete("/end_race/{race_id}")
+async def end_race(race_id: str):
+    if race_id not in active_races:
+        raise HTTPException(status_code=404, detail="Race not found")
+
+    race_info = active_races.pop(race_id, None)
+    if not race_info:
+        raise HTTPException(status_code=404, detail="Race ID not found in active races")
+
+    udp_port = race_info.udp_port
+
+    # Step 1: Clear the race cache
+    if udp_port in race_server.race_caches:
+        del race_server.race_caches[udp_port]
+        print(f"[DEBUG] Cleared cache for race {race_id} on UDP port {udp_port}")
+
+    # Step 2: Remove the queue for the race
+    if udp_port in race_server.race_queues:
+        del race_server.race_queues[udp_port]
+        print(f"[DEBUG] Deleted queue for race {race_id} on UDP port {udp_port}")
+
+    # Step 3: Close and remove the UDP server
+    if udp_port in race_server.udp_servers:
+        try:
+            race_server.udp_servers[udp_port].close()
+            del race_server.udp_servers[udp_port]
+            print(f"[DEBUG] Stopped UDP server for race {race_id} on port {udp_port}")
+        except Exception as e:
+            print(f"[ERROR] Failed to close UDP server for race {race_id}: {e}")
+
+    # Step 4: Close WebSocket connections for the race
+    if udp_port in race_server.race_clients:
+        try:
+            for client in race_server.race_clients[udp_port]:
+                await client.close()
+            del race_server.race_clients[udp_port]
+            print(f"[DEBUG] Disconnected WebSocket clients for race {race_id} on port {udp_port}")
+        except Exception as e:
+            print(f"[ERROR] Failed to close WebSocket connections for race {race_id}: {e}")
+
+    # Step 5: Remove the race_id_to_port mapping
+    if race_id in race_server.race_id_to_port:
+        del race_server.race_id_to_port[race_id]
+        print(f"[DEBUG] Deleted race_id_to_port mapping for race {race_id}")
+
+    return {"status": "success", "message": f"Race {race_id} ended successfully"}
 
 @app.get("/replay_race/{race_id}")
 async def replay_race(race_id: str, db=Depends(get_db)):
