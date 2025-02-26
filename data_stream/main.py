@@ -131,6 +131,84 @@ async def delete_user(username: str, db=Depends(get_db)):
         return {"status": "success", "message": f"User '{username}' deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+# Returns all the saved races: 
+@app.get("/saved_races")
+async def get_all_saved_races(db=Depends(get_db)):
+    try:
+        races = await db.fetch("SELECT race_id, race_name, drift_map, created_at, user_id, race_size_bytes FROM races")
+        if not races:
+            raise HTTPException(status_code=404, detail="No saved races found")
+
+        return {"status": "success", "races": races}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving races: {str(e)}")
+
+# Fetches single race given by race ID: 
+@app.get("/replay_race/{race_id}")
+async def get_saved_race(race_id: str, db=Depends(get_db)):
+    try:
+        race = await db.fetchrow("SELECT * FROM races WHERE race_id = $1", race_id)
+        if not race:
+            raise HTTPException(status_code=404, detail="Race not found")
+
+        return {"status": "success", "race": race}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving race: {str(e)}")
+
+# Gets all the saved races for specific user: 
+@app.get("/user_races/{user_id}")
+async def get_user_saved_races(user_id: str, db=Depends(get_db)):
+    try:
+        races = await db.fetch(
+            "SELECT race_id, race_name, drift_map, created_at, user_id, race_size_bytes FROM races WHERE user_id = $1",
+            user_id
+        )
+        if not races:
+            raise HTTPException(status_code=404, detail="No races found for this user")
+        
+        return {"status": "success", "races": races}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving user races: {str(e)}")
+    
+# For updating a saved race: 
+@app.put("/update_race/{race_id}")
+async def update_saved_race(race_id: str, request: SaveRaceRequest, db=Depends(get_db)):
+    try:
+        result = await db.execute(
+            """
+            UPDATE races
+            SET race_name = $1, drift_map = $2
+            WHERE race_id = $3
+            """,
+            request.race_name, request.drift_map, race_id
+        )
+
+        if result == "UPDATE 0":
+            raise HTTPException(status_code=404, detail="Race not found")
+
+        return {"status": "success", "message": f"Race {race_id} updated successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating race: {str(e)}")
+
+# Delete a saved race: 
+@app.delete("/delete_race/{race_id}")
+async def delete_saved_race(race_id: str, db=Depends(get_db)):
+    try:
+        result = await db.execute("DELETE FROM races WHERE race_id = $1", race_id)
+        
+        if result == "DELETE 0":
+            raise HTTPException(status_code=404, detail="Race not found")
+
+        return {"status": "success", "message": f"Race {race_id} deleted successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting race: {str(e)}")
+
     
 def get_available_port() -> int:
     """Get an available port for UDP server"""
@@ -302,19 +380,6 @@ async def end_race(race_id: str):
         print(f"[DEBUG] Deleted race_id_to_port mapping for race {race_id}")
 
     return {"status": "success", "message": f"Race {race_id} ended successfully"}
-
-@app.get("/replay_race/{race_id}")
-async def replay_race(race_id: str, db=Depends(get_db)):
-    try:
-        result = await db.fetchrow("SELECT flight_packet FROM races WHERE race_id = $1", race_id)
-        
-        if not result:
-            raise HTTPException(status_code=404, detail="Race not found")
-
-        flight_packet = result["flight_packet"]
-        return {"flight_packet": json.loads(flight_packet)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving race data: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(
