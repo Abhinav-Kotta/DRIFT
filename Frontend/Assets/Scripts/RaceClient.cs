@@ -37,7 +37,7 @@ public class RaceEntry
 [Serializable]
 public class DroneData
 {
-    public object drone_id;
+    public String drone_id;
     public float timestamp;
     public Position position;
     public Attitude attitude;

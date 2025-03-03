@@ -1,9 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
+using System.CodeDom.Compiler;
 
 public class StatManager : MonoBehaviour
 {
+    //Fake data toggle 
+    [SerializeField] public bool needFakeData = false;
     // Toggle stats visibility
     [SerializeField] public bool showStats = true;
 
@@ -28,7 +32,7 @@ public class StatManager : MonoBehaviour
     [SerializeField]
     public float pitchInput = 0;  // Controls StickCircleY (Pitch)
     
-    private TMP_Text text;
+    private TMP_Text textBox;
     
     // Stick input visualization
     private RectTransform stickCircleTY;
@@ -45,8 +49,8 @@ public class StatManager : MonoBehaviour
         }
 
         // Get the TextMeshPro component
-        text = canvas.GetComponentInChildren<TMP_Text>();
-        if (text == null)
+        textBox = canvas.GetComponentInChildren<TMP_Text>();
+        if (textBox == null)
         {
             Debug.LogError("Text component not found in Overlay.");
         }
@@ -79,17 +83,24 @@ public class StatManager : MonoBehaviour
     //Also update stick input wiht input from controller. Will do after text is working.
     void Update()
     {
-        DroneMover selectedDrone = DataManager.Instance.GetSelectedDrone();
-        if (selectedDrone != null)
+        if(needFakeData)
         {
-            // Update the text with the selected drone's data
-            text.text = UpdateText(selectedDrone);
+            fakeData();
+            
         }
+        
+            DroneMover selectedDrone = DataManager.Instance.GetSelectedDrone();
+            if (selectedDrone != null)
+            {
+                // Update the text with the selected drone's data
+                Debug.Log("updating text");
+                textBox.text = UpdateText(selectedDrone);
+            }
 
-        if (showStickInput && stickCircleTY != null && stickCirclePR != null)
-        {
-            UpdateStickInput();
-        }
+            if (showStickInput && stickCircleTY != null && stickCirclePR != null)
+            {
+                UpdateStickInput();
+            }
     }
 
     private string UpdateText(DroneMover drone)
@@ -139,5 +150,38 @@ public class StatManager : MonoBehaviour
         // Update positions within their respective panels
         stickCircleTY.anchoredPosition = new Vector2(xThrottleYaw, yThrottleYaw);
         stickCirclePR.anchoredPosition = new Vector2(xPitchRoll, yPitchRoll);
+    }
+
+    private void fakeData()
+    {
+        
+        // Debug.Log("Forming fake data");
+        // Create a consistent drone ID
+        string droneId = "1.1.1.1";
+
+        // Generate position values based on sine and cosine functions
+        float time = Time.time;
+        float x = Mathf.Cos(time) * 10f;
+        float y = Mathf.Sin(time) * 10f;
+        float z = 0f; // Keep z constant for simplicity
+
+        // Create a new DroneData instance
+        DroneData droneData = new DroneData
+        {
+            drone_id = droneId,
+            timestamp = time,
+            position = new Position { x = x, y = y, z = z },
+            attitude = new Attitude { x = 0, y = 0, z = 0, w = 1 },
+            velocity = new Vector3Data { x = 0, y = 0, z = 0 },
+            gyro = new GyroData { pitch = 0, roll = 0, yaw = 0 },
+            inputs = new Inputs { throttle = 0, yaw = 0, pitch = 0, roll = 0 },
+            battery = new Battery { percentage = 100, voltage = 12.6f },
+            motor_count = 4,
+            motor_rpms = new float[4] { 1000, 1000, 1000, 1000 }
+        };
+        // Debug.Log(droneData.drone_id);
+        // Debug.Log(droneData.position.x);    
+        DataManager.Instance.SetSelectedDrone(droneData.drone_id.ToString());
+        DataManager.Instance.UpdateDroneData(droneData);
     }
 }

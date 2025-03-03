@@ -16,7 +16,7 @@ public class DroneMover : MonoBehaviour
     //artificial speed of the drone for testing
     [SerializeField] [Range(0,20)] private float artificalSpeed = 10f;
 
-    public float DID { get; private set; } // Drone ID. Used for filter through total data for movement.
+    public string DID { get; private set; } // Drone ID. Used for filter through total data for movement.
     //initial position of the drone, Used only for simulating movement
     private float initX;
     private float initY;
@@ -223,10 +223,11 @@ public class DroneMover : MonoBehaviour
     public float Yaw => yaw;
     public float Speed => artificalSpeed;
 
-    public void UpdateDroneData(Position position, Attitude attitude)
+    public void SetDroneData(DroneData droneData)
     {
-        setMovement(position.x, position.y, position.z);
-        setRotation(attitude.x, attitude.y, attitude.z, attitude.w);
+        this.DID = droneData.drone_id;
+        setMovement(droneData.position.x, droneData.position.y, droneData.position.z);
+        setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
     }
 
     public void setRotation(float x, float y, float z, float w)
