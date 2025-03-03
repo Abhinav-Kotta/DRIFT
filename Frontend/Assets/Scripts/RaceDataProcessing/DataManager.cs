@@ -1,33 +1,57 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class DataManager : MonoBehaviour
 {
-    private JsonDataGen jsonDataGen;
-    private Dictionary<int, GameObject> droneIdToGameObjectMap;
+    private static DataManager instance;
+    public static DataManager Instance => instance;
+
+    private Dictionary<int, DroneMover> droneIdToGameObjectMap;
+    private DroneMover selectedDrone;
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
         // Initialize the mapping dictionary
-        droneIdToGameObjectMap = new Dictionary<int, GameObject>();
+        droneIdToGameObjectMap = new Dictionary<int, DroneMover>();
 
         // Find the JsonDataGen component in the scene
-        jsonDataGen = FindFirstObjectByType<JsonDataGen>();
-        //replace with json inputer
+    }
 
-        if (jsonDataGen != null)
+    public void UpdateDroneData(DroneData droneData)
+    {
+        // Ensure drone_id is an integer
+        int droneId = Convert.ToInt32(droneData.drone_id);
+
+        if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
-            // Example: Map drone IDs to specific GameObjects in the scene
-            droneIdToGameObjectMap[0] = GameObject.Find("mini-drone0");
-            droneIdToGameObjectMap[1] = GameObject.Find("mini-drone1");
-            droneIdToGameObjectMap[2] = GameObject.Find("mini-drone2");
-
-            // Start repeating the data generation and updating process
-            InvokeRepeating("GenerateAndLogJsonDataForAllDrones", 0f, 1f); // Repeat every 1 second
+            drone.UpdateDroneData(droneData.position, droneData.attitude);
         }
-        else
+    }
+
+    public DroneMover GetSelectedDrone()
+    {
+        return selectedDrone;
+    }
+
+    public void SetSelectedDrone(int droneId)
+    {
+        if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
-            Debug.LogError("JsonDataGen component not found in the scene.");
+            selectedDrone = drone;
         }
     }
 
@@ -36,13 +60,11 @@ public class DataManager : MonoBehaviour
         foreach (var kvp in droneIdToGameObjectMap)
         {
             int droneID = kvp.Key;
-            GameObject droneObject = kvp.Value;
+            DroneMover droneObject = kvp.Value;
 
             if (droneObject != null)
             {
-                string jsonData = jsonDataGen.GenerateAndLogJsonData(droneID);
-                // Update the corresponding GameObject with the generated data
-                UpdateDroneObjectWithJsonData(droneObject, jsonData);
+
             }
             else
             {
@@ -51,19 +73,8 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    void UpdateDroneObjectWithJsonData(GameObject droneObject, string jsonData)
+    void UpdateDroneObjectWithJsonData(DroneMover droneObject, string jsonData)
     {
-        // Parse the position from the JSON data
-        Vector3 position = ParsePositionFromJson(jsonData);
-        // Update the GameObject's position
-        droneObject.transform.position = position;
-        Debug.Log($"Updated {droneObject.name} position to: {position}");
-    }
 
-    Vector3 ParsePositionFromJson(string jsonData)
-    {
-        JsonData data = JsonUtility.FromJson<JsonData>(jsonData);
-        Position position = data.StreamFormat.Position;
-        return new Vector3(position.PositionX, position.PositionY, position.PositionZ);
     }
 }

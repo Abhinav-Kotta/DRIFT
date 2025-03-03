@@ -306,6 +306,9 @@ public class RaceClient : MonoBehaviour
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
                     Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+
+                    // Update the drone's position and rotation
+                    DataManager.Instance.UpdateDroneData(droneData);
                 }
                 catch (Exception e)
                 {

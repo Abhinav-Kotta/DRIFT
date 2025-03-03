@@ -444,7 +444,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 216018839}
-  - component: {fileID: 216018838}
   m_Layer: 0
   m_Name: DataManager
   m_TagString: Untagged
@@ -452,18 +451,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &216018838
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 216018837}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2361b37478c0ca4fb97d8201061d054, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &216018839
 Transform:
   m_ObjectHideFlags: 0
@@ -2284,6 +2271,37 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1316242894}
   m_SourcePrefab: {fileID: 100100000, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
+--- !u!1 &1599029798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1599029799}
+  m_Layer: 0
+  m_Name: NetworkReciever
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1599029799
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599029798}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10.498161, y: 7.792842, z: -27.152287}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1603675098 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
@@ -2410,7 +2428,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1678191211}
-  - component: {fileID: 1678191210}
   m_Layer: 0
   m_Name: JsonGenTester
   m_TagString: Untagged
@@ -2418,18 +2435,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &1678191210
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1678191209}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09707ae87b426b543b485f3d7dd1a593, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1678191211
 Transform:
   m_ObjectHideFlags: 0
@@ -2767,3 +2772,4 @@ SceneRoots:
   - {fileID: 1503046386}
   - {fileID: 2013824758}
   - {fileID: 35560672}
+  - {fileID: 1599029799}

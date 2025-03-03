@@ -16,7 +16,7 @@ public class DroneMover : MonoBehaviour
     //artificial speed of the drone for testing
     [SerializeField] [Range(0,20)] private float artificalSpeed = 10f;
 
-    private float DID; //Drone ID. Used for filter through total data for movement.
+    public float DID { get; private set; } // Drone ID. Used for filter through total data for movement.
     //initial position of the drone, Used only for simulating movement
     private float initX;
     private float initY;
@@ -216,5 +216,22 @@ public class DroneMover : MonoBehaviour
     public float GetSpeed()
     {
         return artificalSpeed;
+    }
+
+    public float Pitch => pitch;
+    public float Roll => roll;
+    public float Yaw => yaw;
+    public float Speed => artificalSpeed;
+
+    public void UpdateDroneData(Position position, Attitude attitude)
+    {
+        setMovement(position.x, position.y, position.z);
+        setRotation(attitude.x, attitude.y, attitude.z, attitude.w);
+    }
+
+    public void setRotation(float x, float y, float z, float w)
+    {
+        Quaternion rotation = new Quaternion(x, y, z, w);
+        transform.rotation = rotation;
     }
 }

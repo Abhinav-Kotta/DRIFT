@@ -15,19 +15,18 @@ public class StatManager : MonoBehaviour
     [SerializeField] public bool showAcceleration = true;
     [SerializeField] public bool showStickInput = true;
 
-
     // Simulated stick input values (-1 to 1 range) DELETE REMOVE REVISE TEMPORARY
-        [SerializeField]
-        public float yawInput = 0;  // Controls StickCircleX (Yaw)
+    [SerializeField]
+    public float yawInput = 0;  // Controls StickCircleX (Yaw)
 
-        [SerializeField]
-        public float throttleInput = 0;  // Controls StickCircleX (Throttle)
+    [SerializeField]
+    public float throttleInput = 0;  // Controls StickCircleX (Throttle)
 
-        [SerializeField]
-        public float rollInput = 0;  // Controls StickCircleY (Roll)
-        
-        [SerializeField]
-        public float pitchInput = 0;  // Controls StickCircleY (Pitch)
+    [SerializeField]
+    public float rollInput = 0;  // Controls StickCircleY (Roll)
+    
+    [SerializeField]
+    public float pitchInput = 0;  // Controls StickCircleY (Pitch)
     
     private TMP_Text text;
     
@@ -80,57 +79,49 @@ public class StatManager : MonoBehaviour
     //Also update stick input wiht input from controller. Will do after text is working.
     void Update()
     {
-        
-           //show text
-            if(text != null)
-            {
-                text.text = UpdateText();
-                //update text
-            }
-            if (showStickInput && stickCircleTY != null && stickCirclePR != null)
-            {
-                UpdateStickInput();
-            }
-        
+        DroneMover selectedDrone = DataManager.Instance.GetSelectedDrone();
+        if (selectedDrone != null)
+        {
+            // Update the text with the selected drone's data
+            text.text = UpdateText(selectedDrone);
+        }
+
+        if (showStickInput && stickCircleTY != null && stickCirclePR != null)
+        {
+            UpdateStickInput();
+        }
     }
-    private string UpdateText()
+
+    private string UpdateText(DroneMover drone)
     {
         string text = "";
-        text += "Drone Id: " + "0" + "\n";
-        if(!showStats)
+        text += "Drone Id: " + drone.DID + "\n";
+        if (!showStats)
         {
             return text;
         }
 
-        if(showVelocity)
+        if (showVelocity)
         {
-            text += " Velocity: " + "2" + "\n";
+            text += " Velocity: " + drone.Speed + "\n";
         }
-        if(showPitch)
+        if (showPitch)
         {
-            text += "     Pitch: " + "20" + "\n";
+            text += "     Pitch: " + drone.Pitch + "\n";
         }
-        if(showRoll)
+        if (showRoll)
         {
-            text += "       Roll: " + "90" + "\n";
+            text += "       Roll: " + drone.Roll + "\n";
         }
-        if(showYaw)
+        if (showYaw)
         {
-            text += "       Yaw: " + "10" + "\n";
+            text += "       Yaw: " + drone.Yaw + "\n";
         }
-        // if(showAcceleration)
-        // {
-        //     text += "Acceleration: " + acceleration + "\n";
-        // }
-        // if(showStickInput)
-        // {
-        //     text += "Stick Input: " + stickInput + "\n";
-        // }
         return text;
     }
+
     private void UpdateStickInput()
     {
-
         // Adjust range to UI coordinates (assume 100x100 box for each indicator)
         //clamp Inputs before position calculation for stick input
         yawInput = Mathf.Clamp(yawInput, -1f, 1f);
@@ -144,8 +135,6 @@ public class StatManager : MonoBehaviour
         float yThrottleYaw = throttleInput * 22.5f;   //50 * 0.45 = 22.5
         float xPitchRoll = rollInput * 35f;
         float yPitchRoll = pitchInput * 22.5f;
-
-        // C
 
         // Update positions within their respective panels
         stickCircleTY.anchoredPosition = new Vector2(xThrottleYaw, yThrottleYaw);
