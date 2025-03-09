@@ -163,6 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcaa46d91b931b4ea4dcb2beb62726e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  needFakeData: 1
   showStats: 1
   showVelocity: 1
   showPitch: 1
@@ -444,13 +445,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 216018839}
+  - component: {fileID: 216018840}
   m_Layer: 0
   m_Name: DataManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &216018839
 Transform:
   m_ObjectHideFlags: 0
@@ -466,6 +468,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &216018840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216018837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2361b37478c0ca4fb97d8201061d054, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &304404131
 GameObject:
   m_ObjectHideFlags: 0
@@ -1509,13 +1523,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 868845443}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  artificialMovement: 1
-  artificialRotation: 1
+  artificialMovement: 0
+  artificialRotation: 0
   angle: 0
   artificalSpeed: 1.4
   x: 1.63
@@ -1706,7 +1720,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.7202997
+      value: 11.38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1800,13 +1814,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316242891}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  artificialMovement: 1
-  artificialRotation: 1
+  artificialMovement: 0
+  artificialRotation: 0
   angle: 0
   artificalSpeed: 2
   x: 1.41
@@ -2350,13 +2364,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1603675098}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  artificialMovement: 1
-  artificialRotation: 1
+  artificialMovement: 0
+  artificialRotation: 0
   angle: 0
   artificalSpeed: 1
   x: 1.31
