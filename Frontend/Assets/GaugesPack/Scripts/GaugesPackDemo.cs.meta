@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 570a71ad893aa1c4e9f39f1442213271
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/GaugesPackDemo.cs
+  uploadId: 154216

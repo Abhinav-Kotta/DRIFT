@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5ccaa1705f55a734786b9b23dd653648
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/SpeedMeter.cs
+  uploadId: 154216

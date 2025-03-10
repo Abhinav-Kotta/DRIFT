@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f530a8b61fcf3ee43aa4267270a571f7
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/AviaHorizont.cs
+  uploadId: 154216

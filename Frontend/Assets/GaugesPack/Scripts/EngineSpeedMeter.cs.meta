@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 250e8ee396e3f6c4fa927c4ccbcfd641
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/EngineSpeedMeter.cs
+  uploadId: 154216
