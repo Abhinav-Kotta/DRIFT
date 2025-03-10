@@ -101,7 +101,7 @@ public class Battery
 public class RaceClient : MonoBehaviour
 {
     [SerializeField]
-    private string baseApiUrl = "http://104.197.175.117:8000";
+    private string baseApiUrl = "http://34.73.87.223:8000";
     private WebSocket websocket;
     private RaceResponse currentRace;
     private bool isListening = false;
@@ -266,7 +266,7 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            string wsUrl = $"ws://104.197.175.117:8765/race/{currentRace.udp_port}";
+            string wsUrl = $"ws://34.73.87.223:8765/race/{currentRace.udp_port}";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
