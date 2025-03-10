@@ -151,4 +151,9 @@ public class NoClipCam : MonoBehaviour
         transform.forward = temp.normalized;
     }
 
+    public int GetCurrentMode()
+    {
+        return mode;
+    }
+
 }
