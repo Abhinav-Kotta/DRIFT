@@ -114,7 +114,7 @@ public class StatManager : MonoBehaviour
 
         if (showVelocity)
         {
-            text += " Velocity: " + drone.Speed + "\n";
+            text += " Velocity: " + drone.Velocity + "\n";
         }
         if (showPitch)
         {

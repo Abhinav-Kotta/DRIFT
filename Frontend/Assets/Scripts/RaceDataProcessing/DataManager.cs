@@ -38,7 +38,7 @@ public class DataManager : MonoBehaviour
         //Debug.Log(droneData.drone_id);
         String droneId = droneData.drone_id.ToString();
         //Debug.Log(droneId);
-
+        
         if (!droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
             // Assign a DroneMover object to the new drone ID
