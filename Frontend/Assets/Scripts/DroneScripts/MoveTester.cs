@@ -109,7 +109,11 @@ public class DroneMover : MonoBehaviour
     {
         return new Vector3(x, y, z);
     }
-
+    //needs testing. Will also need scaling for when we figure that out
+    public float getSpeed()
+    {
+        return velocity.magnitude;
+    }
     public Quaternion getRotation()
     {
         return Quaternion.Euler(pitch, yaw, roll);
