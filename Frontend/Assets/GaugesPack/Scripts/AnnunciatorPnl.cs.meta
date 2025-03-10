@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b3d2b39e7d1593343b12a5f2274416c1
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/AnnunciatorPnl.cs
+  uploadId: 154216

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e1830124cd32cb943b554d3f6b387aa3
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 68281
+  packageName: Gauges Pack
+  packageVersion: 1.01
+  assetPath: Assets/GaugesPack/Scripts/FuelMeter.cs
+  uploadId: 154216
