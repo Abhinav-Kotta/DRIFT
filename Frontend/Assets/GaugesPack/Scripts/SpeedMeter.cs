@@ -3,17 +3,12 @@
 public class SpeedMeter : MonoBehaviour {
     public Texture2D SpeedMeterTexture, ArrowTex, SMFondTex;
     public float posWX = 0f, posWY = 180f;
-        public float k = 0.7f, nx = 0f, ny = 0f, qx = 0f, qy = 0f;
+    public float k = 0.7f, nx = 0f, ny = 0f, qx = 0f, qy = 0f;
     public float SMDelayValue = 0.5f;
     
     public float SpeedValue = 0f;
     private float valueSM = 0f;
     private float lastSMVal = 0f, SMValDrag = 0f;
-    
-    private Vector3 lastPosition;
-    private Vector3 currentPosition;
-    private float timeSinceLastUpdate = 0f;
-    private float updateInterval = 0.1f;
     
     [SerializeField] private float speedScale = 1f;
     
@@ -30,25 +25,6 @@ public class SpeedMeter : MonoBehaviour {
         cameraController = FindObjectOfType<NoClipCam>();
         
         SMDelayValue = Mathf.Max(0.01f, SMDelayValue);
-        
-        if (dataManager != null && dataManager.GetSelectedDrone() != null) {
-            lastPosition = dataManager.GetSelectedDrone().getPosition();
-            currentPosition = lastPosition;
-        }
-    }
-    
-    private void CalculateVelocityFromPositions() {
-        timeSinceLastUpdate += Time.deltaTime;
-        
-        if (timeSinceLastUpdate >= updateInterval) {
-            currentPosition = currentDrone.getPosition();
-            
-            Vector3 displacement = currentPosition - lastPosition;
-            float speed = displacement.magnitude / timeSinceLastUpdate;            
-            SpeedValue = speed * speedScale;
-            lastPosition = currentPosition;
-            timeSinceLastUpdate = 0f;
-        }
     }
 
     void Update() {
@@ -60,7 +36,7 @@ public class SpeedMeter : MonoBehaviour {
         
         currentDrone = dataManager.GetSelectedDrone();
         if (currentDrone != null) {
-            CalculateVelocityFromPositions();
+            SpeedValue = currentDrone.CalculateVelocityMagnitude() * speedScale;
             
             Debug.Log($"Speed: {SpeedValue}");
             Debug.Log($"Position x: {currentDrone.getPosition().x}");

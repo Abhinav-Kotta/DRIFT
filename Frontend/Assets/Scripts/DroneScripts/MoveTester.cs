@@ -5,6 +5,13 @@ using UnityEngine.UIElements;
 
 public class DroneMover : MonoBehaviour
 {
+
+    private Vector3 lastPosition;
+    private Vector3 currentPosition;
+    private float timeSinceLastUpdate = 0f;
+    private float velocityUpdateInterval = 0.1f;
+    private float calculatedSpeed = 0f;
+
     // Can be used for testing for movement and rotation
     [SerializeField] bool artificialMovement = true;
     [SerializeField] bool artificialRotation = true;
@@ -66,6 +73,8 @@ public class DroneMover : MonoBehaviour
 
     void Start()
     {
+        lastPosition = transform.position;
+        currentPosition = lastPosition;
         initX = gameObject.transform.position.x;
         initY = gameObject.transform.position.y;
         initZ = gameObject.transform.position.z;
@@ -110,10 +119,33 @@ public class DroneMover : MonoBehaviour
         return new Vector3(x, y, z);
     }
     //needs testing. Will also need scaling for when we figure that out
-    public float getSpeed()
+    // public float getSpeed()
+    // {
+    //     Debug.Log("Velocity: " + velocity.magnitude);
+    //     return velocity.magnitude;
+    // }
+    public float CalculateVelocityMagnitude()
     {
-        Debug.Log("Velocity: " + velocity.magnitude);
-        return velocity.magnitude;
+        timeSinceLastUpdate += Time.deltaTime;
+        
+        if (timeSinceLastUpdate >= velocityUpdateInterval)
+        {
+            currentPosition = transform.position;
+            
+            Vector3 displacement = currentPosition - lastPosition;
+            
+            calculatedSpeed = displacement.magnitude / timeSinceLastUpdate;
+            
+            lastPosition = currentPosition;
+            timeSinceLastUpdate = 0f;
+        }
+        
+        return calculatedSpeed;
+    }
+
+    public float GetCalculatedSpeed()
+    {
+        return calculatedSpeed;
     }
     public Quaternion getRotation()
     {
