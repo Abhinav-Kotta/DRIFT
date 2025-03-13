@@ -84,23 +84,6 @@ public class DroneMover : MonoBehaviour
 
     void Update()
     {
-        if (!artificialMovement)
-        {
-            setMovement(x, y, z);
-        }
-        else
-        {
-            SimulateMovement();
-        }
-        if (!artificialRotation)
-        {
-            // setRotation(/*some data from liftoff as char array*/);
-        }
-        else
-        {
-            SimulateRotation(motorSpeed1, motorSpeed2, motorSpeed3, motorSpeed4);
-        }
-
         transform.position = getPosition();
         transform.rotation = getRotation();
     }
@@ -121,6 +104,7 @@ public class DroneMover : MonoBehaviour
 
     public void setMovement(float x, float y, float z)
     {
+        Debug.Log("X: " + x + " Y: " + y + " Z: " + z);
         // Set the position of the drone
         this.x = x;
         this.y = y;
