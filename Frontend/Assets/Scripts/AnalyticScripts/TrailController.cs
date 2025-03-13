@@ -11,12 +11,11 @@ public class SpeedBasedTrail : MonoBehaviour
     void Start()
     {
         trailRenderer = GetComponent<TrailRenderer>();
-        droneMover = GetComponent<DroneMover>(); // Reference to DroneMover script
+        droneMover = GetComponent<DroneMover>();
     }
 
     void Update()
     {
-        // Get speed from DroneMover
         float speed = droneMover.CalculateVelocityMagnitude();
 
         // Normalize the speed between 0 and 1 (0 speed = 0, 10 speed = 1)
@@ -31,17 +30,14 @@ public class SpeedBasedTrail : MonoBehaviour
 
     void SetTrailColor(Color color)
     {
-        // Fetch the Trail Renderer positions and color them
         int positions = trailRenderer.positionCount;
 
         if (positions > 0)
         {
-            // Create color gradient
             Gradient gradient = trailRenderer.colorGradient;
             GradientColorKey[] colorKeys = gradient.colorKeys;
             GradientAlphaKey[] alphaKeys = gradient.alphaKeys;
 
-            // Update the last segment's color only
             colorKeys[colorKeys.Length - 1] = new GradientColorKey(color, 1f);
             gradient.SetKeys(colorKeys, alphaKeys);
 
