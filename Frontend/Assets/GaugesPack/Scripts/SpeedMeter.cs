@@ -37,6 +37,7 @@ public class SpeedMeter : MonoBehaviour {
         currentDrone = dataManager.GetSelectedDrone();
         if (currentDrone != null) {
             SpeedValue = currentDrone.CalculateVelocityMagnitude() * speedScale;
+            Debug.Log($"Speed: {SpeedValue}");
             
             Debug.Log($"Speed: {SpeedValue}");
             Debug.Log($"Position x: {currentDrone.getPosition().x}");
