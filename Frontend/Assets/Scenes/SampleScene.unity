@@ -1030,6 +1030,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1746618734}
   - {fileID: 900839104}
   - {fileID: 582413317}
   - {fileID: 712995050}
@@ -1708,14 +1709,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   artificialMovement: 0
   artificialRotation: 0
-  angle: 0
   artificalSpeed: 1.4
+  angle: 0
   x: 1.63
   y: -2.1
   z: 0.98
   roll: 0
   pitch: 0
   yaw: 0
+  velocity: {x: 0, y: 0, z: 0}
+  gyroPitch: 0
+  gyroRoll: 0
+  gyroYaw: 0
+  throttleInput: 0
+  yawInput: 0
+  pitchInput: 0
+  rollInput: 0
+  batteryPercentage: 0
+  batteryVoltage: 0
+  motorCount: 0
+  motorRpms: []
   motorSpeed1: 0
   motorSpeed2: 0
   motorSpeed3: 0
@@ -1986,6 +1999,7 @@ GameObject:
   - component: {fileID: 1136097802}
   - component: {fileID: 1136097803}
   - component: {fileID: 1136097804}
+  - component: {fileID: 1136097805}
   m_Layer: 5
   m_Name: Dashboard
   m_TagString: Untagged
@@ -2124,24 +2138,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1830124cd32cb943b554d3f6b387aa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FuelMeterTexture: {fileID: 0}
-  ArrowTex: {fileID: 0}
-  FMFondTex: {fileID: 0}
-  AP: {fileID: 0}
-  ESM: {fileID: 0}
-  mFont: {fileID: 0}
+  BatteryMeterTexture: {fileID: 2800000, guid: 06a36f455d37645438972dd5f972d576, type: 3}
+  ArrowTex: {fileID: 2800000, guid: bc411e352bf00be488ee0fd1fac561ec, type: 3}
+  BMFondTex: {fileID: 2800000, guid: 11cd4f317451cb04490cbce8b09f95fd, type: 3}
+  mFont: {fileID: 12800000, guid: 1f757be5b12035142adc7c7f716bc268, type: 3}
   posWX: 0
-  posWY: 0
-  textSizeX: 0
-  textSizeY: 0
-  fuelMeterValue: 0
-  k: 0
-  nx: 0
-  ny: 0
+  posWY: -275
+  textSizeX: 22.75
+  textSizeY: -99.45
+  k: 0.75
+  nx: 119.5
+  ny: 21
   qx: 0
   qy: 0
   tx: 0
   ty: 0
+  showInFirstPersonOnly: 1
+  toggleKey: 98
+--- !u!114 &1136097805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1136097801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ccaa1705f55a734786b9b23dd653648, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SpeedMeterTexture: {fileID: 2800000, guid: c21e4454a42a8144e80bf126a0fdd21d, type: 3}
+  ArrowTex: {fileID: 2800000, guid: 83cebe6b063158746b646e67741a2bb8, type: 3}
+  SMFondTex: {fileID: 2800000, guid: 86e05fcf25554a644ba4982f42e38585, type: 3}
+  posWX: -300
+  posWY: -275
+  k: 0.85
+  nx: 120
+  ny: 30
+  qx: 0
+  qy: 0
+  SMDelayValue: 0.85
+  SpeedValue: 0
+  speedScale: 1
+  showInFirstPersonOnly: 1
+  toggleKey: 115
 --- !u!1 &1316242891 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
@@ -2166,14 +2206,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   artificialMovement: 0
   artificialRotation: 0
-  angle: 0
   artificalSpeed: 2
+  angle: 0
   x: 1.41
   y: 1.18
   z: 0.91
   roll: 0
   pitch: 0
   yaw: 0
+  velocity: {x: 0, y: 0, z: 0}
+  gyroPitch: 0
+  gyroRoll: 0
+  gyroYaw: 0
+  throttleInput: 0
+  yawInput: 0
+  pitchInput: 0
+  rollInput: 0
+  batteryPercentage: 0
+  batteryVoltage: 0
+  motorCount: 0
+  motorRpms: []
   motorSpeed1: 0
   motorSpeed2: 0
   motorSpeed3: 0
@@ -2260,6 +2312,67 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 868845446}
   m_SourcePrefab: {fileID: 100100000, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
+--- !u!1001 &1440780404
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 632479231}
+    m_Modifications:
+    - target: {fileID: 100000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_Name
+      value: GaugesPack
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 290.57864
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
 --- !u!1 &1468538321
 GameObject:
   m_ObjectHideFlags: 0
@@ -2716,14 +2829,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   artificialMovement: 0
   artificialRotation: 0
-  angle: 0
   artificalSpeed: 1
+  angle: 0
   x: 1.31
   y: 1.01
   z: -1.78
   roll: 0
   pitch: 0
   yaw: 0
+  velocity: {x: 0, y: 0, z: 0}
+  gyroPitch: 0
+  gyroRoll: 0
+  gyroYaw: 0
+  throttleInput: 0
+  yawInput: 0
+  pitchInput: 0
+  rollInput: 0
+  batteryPercentage: 0
+  batteryVoltage: 0
+  motorCount: 0
+  motorRpms: []
   motorSpeed1: 0
   motorSpeed2: 0
   motorSpeed3: 0
@@ -2814,6 +2939,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1646863086}
   m_Mesh: {fileID: 2385276524630820979, guid: 1a5e34383793c834bb9690a1cf0c753b, type: 3}
+--- !u!4 &1746618734 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: 15f4ad64b03d8e0449e9a1a758996b2c, type: 3}
+  m_PrefabInstance: {fileID: 1440780404}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1954851080 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1767192433, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}

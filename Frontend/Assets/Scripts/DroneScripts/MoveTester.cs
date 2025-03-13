@@ -112,6 +112,7 @@ public class DroneMover : MonoBehaviour
     //needs testing. Will also need scaling for when we figure that out
     public float getSpeed()
     {
+        Debug.Log("Velocity: " + velocity.magnitude);
         return velocity.magnitude;
     }
     public Quaternion getRotation()
