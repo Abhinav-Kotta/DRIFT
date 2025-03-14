@@ -85,6 +85,7 @@ public class StatManager : MonoBehaviour
     {
         if(needFakeData)
         {
+            Debug.Log("making fake data check");
             fakeData();
             
         }
