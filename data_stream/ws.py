@@ -132,7 +132,7 @@ class RaceServer:
                         motor_rpms = unpacked_data[21:]
 
                         drone_data = {
-                            "drone_id": addr,
+                            "drone_id": addr[0],
                             "timestamp": timestamp,
                             "position": {"x": position[0], "y": position[1], "z": position[2]},
                             "attitude": {"x": attitude[0], "y": attitude[1], "z": attitude[2], "w": attitude[3]},
