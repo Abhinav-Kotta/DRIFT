@@ -139,6 +139,7 @@ public class DroneMover : MonoBehaviour
         //Stuff that is reflected
         setMovement(droneData.position.x, droneData.position.y, droneData.position.z);
         setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
+        setProps(droneData.motor_rpms); //needs testing. Should work. may throw type exception if anything. edit function decl below.
         this.velocity = new Vector3(droneData.velocity.x, droneData.velocity.y, droneData.velocity.z);
         this.gyroPitch = droneData.gyro.pitch;
         this.gyroRoll = droneData.gyro.roll;
@@ -153,7 +154,7 @@ public class DroneMover : MonoBehaviour
         this.motorRpms = droneData.motor_rpms;
     }
 
-    public void setProps(char[] rotationStats)
+    public void setProps(float[] rotationStats)
     {
         // May need to change type of this depending on format received from liftoff. For now we will use char array as it is the most flexible
 
