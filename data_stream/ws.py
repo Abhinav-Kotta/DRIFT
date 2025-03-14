@@ -132,6 +132,7 @@ class RaceServer:
                         motor_rpms = unpacked_data[21:]
 
                         drone_data = {
+                            "drone_id": addr,
                             "timestamp": timestamp,
                             "position": {"x": position[0], "y": position[1], "z": position[2]},
                             "attitude": {"x": attitude[0], "y": attitude[1], "z": attitude[2], "w": attitude[3]},
@@ -144,7 +145,7 @@ class RaceServer:
                         }
 
                         message = json.dumps(drone_data)
-
+                        print(message)
                         # Add message to the correct queue
                         if udp_port in self.race_queues:
                             self.race_queues[udp_port].put(RaceMessage(udp_port, message))
