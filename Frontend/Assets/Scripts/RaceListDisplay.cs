@@ -28,51 +28,55 @@ public class RaceListDisplay : MonoBehaviour
     }
 
     IEnumerator LoadRaces()
+{
+    string uri = $"{apiUrl}/list_races";
+    Debug.Log("Attempting to connect to: " + uri);
+
+    using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
     {
-        string uri = $"{apiUrl}/list_races";
-        Debug.Log("Attempting to connect to: " + uri);
+        uwr.SetRequestHeader("Content-Type", "application/json");
+        uwr.SetRequestHeader("Accept", "application/json");
 
-        using (UnityWebRequest uwr = UnityWebRequest.Get(uri))
+        Debug.Log("Sending web request...");
+        yield return uwr.SendWebRequest();
+        Debug.Log("Request completed.");
+
+        if (uwr.result == UnityWebRequest.Result.ConnectionError || 
+            uwr.result == UnityWebRequest.Result.ProtocolError)
         {
-            uwr.SetRequestHeader("Content-Type", "application/json");
-            uwr.SetRequestHeader("Accept", "application/json");
+            Debug.LogError($"Error: {uwr.error}");
+            noRacesText.gameObject.SetActive(true);
+            yield break;
+        }
 
-            Debug.Log("Sending web request...");
-            yield return uwr.SendWebRequest();
-            Debug.Log("Request completed.");
+        List<RaceResponse> races = ParseRaceData(uwr.downloadHandler.text);
 
-            if (uwr.result == UnityWebRequest.Result.ConnectionError || 
-                uwr.result == UnityWebRequest.Result.ProtocolError)
+        if (races == null || races.Count == 0)
+        {
+            noRacesText.gameObject.SetActive(true);
+            yield break;
+        }
+
+        noRacesText.gameObject.SetActive(false);
+
+        foreach (var race in races)
+        {
+            Debug.Log($"Creating card for race: {race.race_id}, Status: {race.status}, UDP: {race.udp_port}, WS: {race.ws_port}");
+            GameObject newRaceCard = Instantiate(raceCardPrefab, raceListContainer);
+
+            // Assign race details to the card
+            RaceCardUI cardUI = newRaceCard.GetComponent<RaceCardUI>();
+            if (cardUI != null)
             {
-                Debug.LogError($"Error: {uwr.error}");
-                Debug.LogError($"Response Code: {uwr.responseCode}");
-                Debug.LogError($"Response Data: {uwr.downloadHandler.text}");
-                noRacesText.gameObject.SetActive(true);
-                yield break;
+                cardUI.SetRaceInfo(race.race_id, race.status, race.udp_port, race.ws_port);
             }
             else
             {
-                Debug.Log($"Response Code: {uwr.responseCode}");
-                Debug.Log($"Data received: {uwr.downloadHandler.text}");
-
-                List<RaceResponse> races = ParseRaceData(uwr.downloadHandler.text);
-
-                if (races == null || races.Count == 0)
-                {
-                    noRacesText.gameObject.SetActive(true);
-                    yield break;
-                }
-
-                noRacesText.gameObject.SetActive(false);
-
-                foreach (var race in races)
-                {
-                    Debug.Log($"Creating card for race: {race.race_id}");
-                    GameObject newRaceCard = Instantiate(raceCardPrefab, raceListContainer);
-                }
+                Debug.LogError("RaceCardUI component missing on prefab");
             }
         }
     }
+}
 
     private List<RaceResponse> ParseRaceData(string jsonData)
 {
