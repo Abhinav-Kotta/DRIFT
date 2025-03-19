@@ -104,7 +104,7 @@ public class RaceClient : MonoBehaviour
     [SerializeField]
     public string raceUdp;
     private WebSocket websocket;
-    private RaceResponse currentRace;
+    public RaceResponse currentRace;
     private bool isListening = false;
 
     async void Start()
@@ -311,6 +311,11 @@ public class RaceClient : MonoBehaviour
                     Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
+                    if (DataManager.Instance == null)
+                    {
+                        Debug.LogError("[WS] DataManager.Instance is null! Make sure DataManager exists in the scene.");
+                        return;
+                    }
                     DataManager.Instance.UpdateDroneData(droneData);
                 }
                 catch (Exception e)
