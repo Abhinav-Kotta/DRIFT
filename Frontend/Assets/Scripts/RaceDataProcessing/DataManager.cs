@@ -46,6 +46,7 @@ public class DataManager : MonoBehaviour
             {
                 drone = droneMovers[0];
                 droneMovers.RemoveAt(0);
+                drone.Name = $"Drone {droneIdToGameObjectMap.Count + 1}";
                 droneIdToGameObjectMap.Add(droneId, drone);
             }
             else
