@@ -121,7 +121,6 @@ public class RaceClient : MonoBehaviour
             Debug.Log("Starting race connection initialization...");
 
             currentRace = await ListRaces();
-
             //testing code ignore unless needed
             // if (currentRace == null)
             // {
@@ -308,6 +307,7 @@ public class RaceClient : MonoBehaviour
                     Debug.Log($"[WS] Decoded message: {message}");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
+
                     Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
