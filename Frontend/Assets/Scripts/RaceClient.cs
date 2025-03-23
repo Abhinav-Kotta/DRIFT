@@ -268,7 +268,7 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            string wsUrl = $"ws://34.73.87.223:8765/race/{raceUdp}";
+            string wsUrl = $"ws://35.185.81.190:8765/race/{raceUdp}";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
