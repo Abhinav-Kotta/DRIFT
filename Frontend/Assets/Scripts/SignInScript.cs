@@ -3,8 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class SignInScript : MonoBehaviour
 {
@@ -15,7 +14,6 @@ public class SignInScript : MonoBehaviour
     
     private string apiUrl;
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // Get API URL from config
@@ -79,6 +77,7 @@ public class SignInScript : MonoBehaviour
         
         // Log the URL being used (for debugging purposes)
         Debug.Log($"Connecting to: {apiUrl}/login");
+        Debug.Log($"Payload: {jsonPayload}");
 
         // Create web request
         using (UnityWebRequest www = new UnityWebRequest($"{apiUrl}/login", "POST"))
@@ -101,6 +100,8 @@ public class SignInScript : MonoBehaviour
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"Login error: {www.error}");
+                Debug.LogError($"Response code: {www.responseCode}");
+                Debug.LogError($"Response: {www.downloadHandler.text}");
                 
                 // Provide more specific error messages based on the error type
                 if (www.error.Contains("111") || www.error.Contains("Connect call failed"))
@@ -116,7 +117,7 @@ public class SignInScript : MonoBehaviour
                 else
                 {
                     if (errorText != null)
-                        errorText.text = $"Login failed: {www.error}";
+                        errorText.text = $"Login failed. Please try again.";
                 }
             }
             else
@@ -132,8 +133,8 @@ public class SignInScript : MonoBehaviour
                     // Check if login was successful based on status field
                     if (response.status == "success")
                     {
-                        // Extract the user ID
-                        int userId = response.user_id.id;
+                        // Extract the user ID (now directly in user_id field)
+                        int userId = response.user_id;
                         Debug.Log($"Extracted user ID: {userId}");
                         
                         // Store user info
@@ -143,7 +144,7 @@ public class SignInScript : MonoBehaviour
                             Debug.Log("User info set in UserManager");
                             
                             // Navigate to main screen or home page
-                            // SceneManager.LoadScene("MainMenu");
+                            SceneManager.LoadScene("Scenes/SampleScene");
                         }
                         else
                         {
@@ -162,6 +163,7 @@ public class SignInScript : MonoBehaviour
                 catch (System.Exception e)
                 {
                     Debug.LogError($"Error parsing response: {e.Message}");
+                    Debug.LogError($"Raw response: {result}");
                     if (errorText != null)
                         errorText.text = "Server returned an invalid response.";
                 }
@@ -189,11 +191,5 @@ public class LoginResponse
 {
     public string status;
     public string message;
-    public UserId user_id;
-}
-
-[System.Serializable]
-public class UserId
-{
-    public int id;
+    public int user_id;  // Changed from UserId object to direct int
 }

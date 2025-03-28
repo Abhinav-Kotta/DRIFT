@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcaa46d91b931b4ea4dcb2beb62726e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  needFakeData: 0
+  needFakeData: 1
   showStats: 1
   showVelocity: 1
   showPitch: 1
@@ -4587,6 +4587,9 @@ MonoBehaviour:
   exitButton: {fileID: 1749095169}
   popupPanel: {fileID: 14151201}
   popupText: {fileID: 2062414152}
+  apiServerIP: 
+  apiPort: 8000
+  raceId: 
 --- !u!1 &1767172290
 GameObject:
   m_ObjectHideFlags: 0

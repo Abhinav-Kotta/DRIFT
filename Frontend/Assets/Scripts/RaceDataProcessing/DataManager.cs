@@ -71,6 +71,7 @@ public class DataManager : MonoBehaviour
     {
         if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
+            Debug.Log($"Selected drone ID: {droneId}");
             selectedDrone = drone;
         }
     }
