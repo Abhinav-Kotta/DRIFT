@@ -8,6 +8,7 @@ public class DroneViewCam : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float mouseSensitivity = 2f;
+    [SerializeField] private Camera cam; // Reference to the XR camera
 
     //array of drones. Assignment of which stream goes to which drone yet to be determined
     //TO DO: Get Drone List from data manager
@@ -55,10 +56,11 @@ public class DroneViewCam : MonoBehaviour
         }
         if(dataManager.GetNumActiveDrones() == 0)
         {
-            //No drone for moving Just no clip
-            return;
+            noClip();
         }
-        drone = dataManager.GetSelectedDrone();
+        else{
+            drone = dataManager.GetSelectedDrone();
+        }
         //drone = dataManager.GetSelectedDrone();
         //Debug.Log("Mode num: " + mode + " Drone: " + dataManager.selectedDroneIndex);
        
@@ -103,27 +105,46 @@ public class DroneViewCam : MonoBehaviour
     }
 
     //Needs refactoring. This is a mess
-    private void noClip(){
-        // Get the ControllerInput instance
-        ControllerInput controllerInput = FindObjectOfType<ControllerInput>();
-        if (controllerInput == null)
+    private void noClip()
+    {
+        // Debug log to make sure we are in no-clip mode
+        Debug.Log("No Clip Mode");
+
+        // Ensure the ControllerInput instance exists
+        if (ControllerInput.Instance == null)
         {
-            Debug.LogError("ControllerInput not found in the scene.");
+            Debug.LogError("ControllerInput instance is null. Ensure ControllerInput is in the scene.");
+            return;
+        }
+
+        // Ensure the camera reference exists
+        if (cam == null)
+        {
+            Debug.LogError("Camera reference is missing. Ensure the camera is assigned.");
             return;
         }
 
         // Get stick inputs
-        Vector2 leftStick = controllerInput.LeftStickInput;  // Movement input
-        Vector2 rightStick = controllerInput.RightStickInput; // Rotation input
+        Vector2 leftStick = ControllerInput.Instance.LeftStickInput;  // Movement input
+        Vector2 rightStick = ControllerInput.Instance.RightStickInput; // Rotation input
 
-        // Use left stick for movement
-        Vector3 moveDirection = new Vector3(leftStick.x, 0, leftStick.y) * moveSpeed * Time.deltaTime;
-        transform.Translate(moveDirection, Space.Self);
+        Debug.Log("Left Stick Input in mover: " + leftStick);
+        Debug.Log("Right Stick Input in mover: " + rightStick);
 
-        // Use right stick for rotation
-        float rotationX = -rightStick.y * mouseSensitivity; // Pitch (up/down)
-        float rotationY = rightStick.x * mouseSensitivity;  // Yaw (left/right)
-        transform.Rotate(rotationX, rotationY, 0, Space.Self);
+        // Use the camera's forward and right vectors for movement, ignoring the Y component
+        Vector3 forward = cam.transform.forward;
+                forward.Normalize();
+
+        Vector3 right = cam.transform.right;
+                right.Normalize();
+
+        // Calculate movement direction based on left stick input
+        Vector3 moveDirection = (forward * leftStick.y + right * leftStick.x) * moveSpeed * 10f * Time.deltaTime; // Increased movement sensitivity by 10
+        transform.position += moveDirection;
+
+        // Use the right stick to rotate the rig around the Y-axis (yaw)
+        float rotationY = rightStick.x * moveSpeed * 8f * Time.deltaTime; // Increased rotation sensitivity by 5
+        transform.Rotate(0, rotationY, 0, Space.World);
     }
     private Vector3 findAngleFromCameraToDrone(){
         return new Vector3(drone.transform.position.x - transform.position.x, drone.transform.position.y - transform.position.y, drone.transform.position.z - transform.position.z);
