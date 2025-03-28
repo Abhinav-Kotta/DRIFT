@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b3f2f5ab20cc49b46943a3b82f367485
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - raceCardPrefab: {fileID: 6656672676711020931, guid: 04ddfa468ab35a9408fd911ffce2e1d2, type: 3}
+  - raceListContainer: {instanceID: 0}
+  - noRacesText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
