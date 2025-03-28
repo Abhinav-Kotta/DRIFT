@@ -68,12 +68,24 @@ public class RaceListDisplay : MonoBehaviour
             RaceCardUI cardUI = newRaceCard.GetComponent<RaceCardUI>();
             if (cardUI != null)
             {
-                cardUI.SetRaceInfo(race.race_id, race.status, race.udp_port, race.ws_port);
+            cardUI.SetRaceInfo(race.race_id, race.status, race.udp_port, race.ws_port);
+
+            // ✅ Hook up the Launch button to LoadRace() in code
+            UnityEngine.UI.Button launchButton = newRaceCard.GetComponentInChildren<UnityEngine.UI.Button>();
+            if (launchButton != null)
+            {
+                launchButton.onClick.RemoveAllListeners(); // Clear previous listeners if any
+                launchButton.onClick.AddListener(cardUI.LoadRace);
             }
             else
             {
-                Debug.LogError("RaceCardUI component missing on prefab");
+            Debug.LogWarning("[RaceListDisplay] Launch button not found in RaceCard prefab.");
             }
+        }
+        else
+        {
+            Debug.LogError("RaceCardUI component missing on prefab");
+        }
         }
     }
 }

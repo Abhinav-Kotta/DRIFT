@@ -109,6 +109,25 @@ public class RaceClient : MonoBehaviour
 
     async void Start()
     {
+        if (PlayerPrefs.HasKey("udpPort") && PlayerPrefs.HasKey("raceID"))
+        {
+            string udpPort = PlayerPrefs.GetString("udpPort");
+            string raceID = PlayerPrefs.GetString("raceID");
+            string status = PlayerPrefs.GetString("status");
+
+            raceUdp = udpPort.ToString();
+
+            Debug.Log($"[RaceClient] Loaded Race Data:");
+            Debug.Log($"  - UDP Port: {udpPort}");
+            Debug.Log($"  - Race ID: {raceID}");
+            Debug.Log($"  - Status: {status}");
+        }
+        else
+        {
+            Debug.LogWarning("[RaceClient] No race data found in PlayerPrefs. RaceClient may not connect properly.");
+            // Optional: return or handle fallback logic here
+        }
+
         baseApiUrl = ConfigLoader.GetApiUrl();
         Debug.Log("RaceClient Start() called");
         await InitializeRaceConnection();
