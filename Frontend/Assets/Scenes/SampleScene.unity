@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcaa46d91b931b4ea4dcb2beb62726e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  needFakeData: 1
+  needFakeData: 0
   showStats: 1
   showVelocity: 1
   showPitch: 1
@@ -268,6 +268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -604,6 +605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2361b37478c0ca4fb97d8201061d054, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedDroneIndex: 0
 --- !u!1 &224344788
 GameObject:
   m_ObjectHideFlags: 0
@@ -2669,6 +2671,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 1.4
@@ -3360,6 +3363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -3637,6 +3641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -4204,6 +4209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 1
@@ -4419,6 +4425,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
