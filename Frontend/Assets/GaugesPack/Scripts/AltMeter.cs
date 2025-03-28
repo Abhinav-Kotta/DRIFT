@@ -43,6 +43,10 @@ public class AltMeter : MonoBehaviour {
         if (!ShouldShowGauge()) return;
         
         currentDrone = dataManager.GetSelectedDrone();
+        if (currentDrone == null) {
+            // Debug.LogError("No drone selected or data manager not initialized.");
+            return;
+        }
         if (currentDrone != null) {
             AltMValue = currentDrone.getPosition().y * altitudeScale;
             Debug.Log(AltMValue);

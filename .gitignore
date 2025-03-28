@@ -77,3 +77,4 @@ Frontend/[Aa]ssets/[Ss]treamingAssets/aa/*
 venv/
 .env
 __pycache__/
+.fake

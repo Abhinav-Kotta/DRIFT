@@ -83,21 +83,38 @@ async def create_user(user: NewUser, db=Depends(get_db)):
 @app.post("/login")
 async def login(user: User, db=Depends(get_db)):
     try:
-        result = await db.fetchrow("SELECT password FROM users WHERE username = $1", user.username)
-
+        print(f"Login attempt for username: {user.username}")
+        result = await db.fetchrow("SELECT id, password FROM users WHERE username = $1", user.username)
+        
         if not result:
+            print(f"User not found: {user.username}")
             raise HTTPException(status_code=401, detail="Invalid username")
 
+        print(f"User found, verifying password")
         stored_hashed_password = result["password"]
-
+        user_id = result["id"]
+        
+        # Verify the password
         if not verify_password(user.password, stored_hashed_password):
+            print(f"Invalid password for user: {user.username}")
             raise HTTPException(status_code=401, detail="Invalid password")
         
-        u_id = await db.fetchrow("SELECT id FROM users WHERE username = $1", user.username)
-        return {"status": "success", "message": "Login successful", "user_id": u_id}
+        # Password verified, return success
+        print(f"Login successful for user: {user.username}, id: {user_id}")
+        return {
+            "status": "success", 
+            "message": "Login successful", 
+            "user_id": user_id
+        }
+    except HTTPException:
+        raise
     except Exception as e:
+        # Log any other exceptions
+        print(f"Unexpected error during login: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
-
+    
 @app.post("/reset_password")
 async def reset_password(request: ResetPasswordRequest, db=Depends(get_db)):
     try:
