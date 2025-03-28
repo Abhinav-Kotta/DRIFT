@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 
 public class DroneMover : MonoBehaviour
 {
+    [SerializeField] public String Name = "Drone";
 
     private Vector3 lastPosition;
     private Vector3 currentPosition;

@@ -22,6 +22,7 @@ app = FastAPI()
 
 class RaceResponse(BaseModel):
     race_id: str
+    race_creator: int
     udp_port: int
     ws_port: int
     status: str
@@ -280,7 +281,7 @@ async def shutdown_event():
 active_races: Dict[str, RaceResponse] = {}
 
 @app.post("/create_race")
-async def create_race() -> Dict[str, RaceResponse]:
+async def create_race(user_id: int) -> Dict[str, RaceResponse]:
     udp_port = get_available_port()
     race_id = str(uuid.uuid4())
 
@@ -290,6 +291,7 @@ async def create_race() -> Dict[str, RaceResponse]:
 
         race_response = RaceResponse(
             race_id=race_id,
+            race_creator=user_id,
             udp_port=udp_port,
             ws_port=WS_PORT,
             status="started"

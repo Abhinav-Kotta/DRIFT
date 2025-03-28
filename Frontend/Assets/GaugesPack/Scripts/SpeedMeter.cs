@@ -15,14 +15,14 @@ public class SpeedMeter : MonoBehaviour {
     private DataManager dataManager;
     private DroneMover currentDrone;
     
-    private NoClipCam cameraController;
+    private DroneViewCam cameraController;
     [SerializeField] private bool showInFirstPersonOnly = true;
     [SerializeField] private KeyCode toggleKey = KeyCode.S;
     private bool showGauge = true;
 
     void Start() {
         dataManager = DataManager.Instance;
-        cameraController = FindObjectOfType<NoClipCam>();
+        cameraController = FindObjectOfType<DroneViewCam>();
         
         SMDelayValue = Mathf.Max(0.01f, SMDelayValue);
     }
