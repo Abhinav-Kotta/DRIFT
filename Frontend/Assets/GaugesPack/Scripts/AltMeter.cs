@@ -18,7 +18,7 @@ public class AltMeter : MonoBehaviour {
     private DataManager dataManager;
     private DroneMover currentDrone;
     
-    private NoClipCam cameraController;
+    private DroneViewCam cameraController;
     [SerializeField] private bool showInFirstPersonOnly = true;
     [SerializeField] private KeyCode toggleKey = KeyCode.G;
     private bool showGauge = true;
@@ -26,7 +26,7 @@ public class AltMeter : MonoBehaviour {
     void Start() {
         // Get references to your data management system
         dataManager = DataManager.Instance;
-        cameraController = FindObjectOfType<NoClipCam>();
+        cameraController = FindObjectOfType<DroneViewCam>();
         
         // Initialize values properly
         k = Mathf.Clamp(k, 0.5f, 2f);
@@ -43,6 +43,10 @@ public class AltMeter : MonoBehaviour {
         if (!ShouldShowGauge()) return;
         
         currentDrone = dataManager.GetSelectedDrone();
+        if (currentDrone == null) {
+            // Debug.LogError("No drone selected or data manager not initialized.");
+            return;
+        }
         if (currentDrone != null) {
             AltMValue = currentDrone.getPosition().y * altitudeScale;
             Debug.Log(AltMValue);

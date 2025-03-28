@@ -100,14 +100,16 @@ public class Battery
 
 public class RaceClient : MonoBehaviour
 {
+    private string baseApiUrl;
     [SerializeField]
-    private string baseApiUrl = "http://34.73.87.223:8000";
+    public string raceUdp;
     private WebSocket websocket;
-    private RaceResponse currentRace;
+    public RaceResponse currentRace;
     private bool isListening = false;
 
     async void Start()
     {
+        baseApiUrl = ConfigLoader.GetApiUrl();
         Debug.Log("RaceClient Start() called");
         await InitializeRaceConnection();
     }
@@ -120,19 +122,20 @@ public class RaceClient : MonoBehaviour
 
             currentRace = await ListRaces();
 
-            if (currentRace == null)
-            {
-                Debug.Log("No races found, creating a new race...");
-                await CreateRace();  // Create a race but don't store the response
+            //testing code ignore unless needed
+            // if (currentRace == null)
+            // {
+            //     Debug.Log("No races found, creating a new race...");
+            //     await CreateRace();  // Create a race but don't store the response
 
-                // Now get the list of races again and use the first one
-                currentRace = await ListRaces();
-                if (currentRace == null)
-                {
-                    Debug.LogError("Failed to get race after creation");
-                    return;
-                }
-            }
+            //     // Now get the list of races again and use the first one
+            //     currentRace = await ListRaces();
+            //     if (currentRace == null)
+            //     {
+            //         Debug.LogError("Failed to get race after creation");
+            //         return;
+            //     }
+            // }
 
             Debug.Log($"Using race with ID: {currentRace.race_id}");
 
@@ -266,7 +269,7 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            string wsUrl = $"ws://34.73.87.223:8765/race/{currentRace.udp_port}";
+            string wsUrl = $"ws://35.185.81.190:8765/race/38503";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
@@ -301,13 +304,18 @@ public class RaceClient : MonoBehaviour
                 try
                 {
                     var message = Encoding.UTF8.GetString(bytes);
-                    Debug.Log($"[WS] Received message length: {bytes.Length}");
-                    Debug.Log($"[WS] Decoded message: {message}");
+                    // Debug.Log($"[WS] Received message length: {bytes.Length}");
+                    // Debug.Log($"[WS] Decoded message: {message}");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
-                    Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                    // Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
+                    if (DataManager.Instance == null)
+                    {
+                        Debug.LogError("[WS] DataManager.Instance is null! Make sure DataManager exists in the scene.");
+                        return;
+                    }
                     DataManager.Instance.UpdateDroneData(droneData);
                 }
                 catch (Exception e)

@@ -5,14 +5,35 @@ using UnityEngine;
 public class DataManager : MonoBehaviour
 {
     private static DataManager instance;
-    public static DataManager Instance => instance;
+    public static DataManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                Debug.LogError("DataManager instance is null! Make sure it's in the scene.");
+            }
+            return instance;
+        }
+    }
 
-    private Dictionary<String, DroneMover> droneIdToGameObjectMap;
+    private Dictionary<string, DroneMover> droneIdToGameObjectMap;
     
-    private List<DroneMover> droneMovers;
-    private DroneMover selectedDrone;
 
-    void Awake()
+    //This is all drones not mapped to a input stream
+    private List<DroneMover> unmappedDroneMovers;
+
+    //Drone movers that are mapped to input streams from Liftoff
+    private List<DroneMover> activeDroneMovers;
+
+    //Currently selected drone for data viewing/drone mover and cam-mover strict
+    private DroneMover selectedDrone;
+    
+    //Used for drone selection rotation/indexing
+    public int selectedDroneIndex = 0;
+    public event Action<DroneMover> onDroneAdded;
+
+    private void Awake()
     {
         if (instance == null)
         {
@@ -25,27 +46,31 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    void Start()
+    private void Start()
     {
+        activeDroneMovers = new List<DroneMover>();
         // Initialize the mapping dictionary
-        droneIdToGameObjectMap = new Dictionary<String, DroneMover>();
-        droneMovers = new List<DroneMover>(FindObjectsOfType<DroneMover>());
-            //FindObjectsOfType<DroneMover>());
+        droneIdToGameObjectMap = new Dictionary<string, DroneMover>();
+        unmappedDroneMovers = new List<DroneMover>(FindObjectsOfType<DroneMover>());
     }
-
     public void UpdateDroneData(DroneData droneData)
     {
-        //Debug.Log(droneData.drone_id);
-        String droneId = droneData.drone_id.ToString();
-        //Debug.Log(droneId);
-        
+        var droneId = droneData.drone_id;
+
         if (!droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
             // Assign a DroneMover object to the new drone ID
-            if (droneMovers.Count > 0)
+            if (unmappedDroneMovers.Count > 0)
             {
-                drone = droneMovers[0];
-                droneMovers.RemoveAt(0);
+                drone = unmappedDroneMovers[0];
+                unmappedDroneMovers.RemoveAt(0);
+                drone.Name = $"Drone {droneIdToGameObjectMap.Count + 1}";
+                if (onDroneAdded == null)
+                {
+                    Debug.LogWarning("No listeners subscribed to onDroneAdded event!");
+                }
+                activeDroneMovers.Add(drone);
+                onDroneAdded?.Invoke(drone);
                 droneIdToGameObjectMap.Add(droneId, drone);
             }
             else
@@ -67,34 +92,42 @@ public class DataManager : MonoBehaviour
         return selectedDrone;
     }
 
-    public void SetSelectedDrone(String droneId)
+    public void SetSelectedDrone(string droneId)
     {
         if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
+            Debug.Log($"Selected drone ID: {droneId}");
             selectedDrone = drone;
         }
     }
-
-    // void GenerateAndLogJsonDataForAllDrones()
-    // {
-    //     foreach (var kvp in droneIdToGameObjectMap)
-    //     {
-    //         String droneID = kvp.Key;
-    //         DroneMover droneObject = kvp.Value;
-
-    //         if (droneObject != null)
-    //         {
-
-    //         }
-    //         else
-    //         {
-    //             Debug.LogError($"GameObject for drone ID {droneID} not found.");
-    //         }
-    //     }
-    // }
-
-    // void UpdateDroneObjectWithJsonData(DroneMover droneObject, string jsonData)
-    // {
-
-    // }
+    public void NextDrone()
+    {
+        if(GetNumActiveDrones() == 0)
+            return;
+        Debug.Log(selectedDroneIndex + " + 1");
+        selectedDroneIndex ++;
+        if(selectedDroneIndex > activeDroneMovers.Count -1 )
+        {
+            selectedDroneIndex = 0;
+        }
+        selectedDrone = activeDroneMovers[selectedDroneIndex];
+        Debug.Log(selectedDrone.DID);
+    }
+    public void PrevDrone()
+    {
+        if(GetNumActiveDrones() == 0)
+            return;
+        Debug.Log(selectedDroneIndex + " - 1");
+        selectedDroneIndex --;
+        if(selectedDroneIndex < 0)
+        {
+            selectedDroneIndex = activeDroneMovers.Count -1;
+        }
+        selectedDrone = activeDroneMovers[selectedDroneIndex];
+    }
+    //to find number of active drones for indexing purposes
+    public int GetNumActiveDrones()
+    {
+        return activeDroneMovers.Count;
+    }
 }

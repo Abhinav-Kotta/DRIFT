@@ -5,6 +5,14 @@ using UnityEngine.UIElements;
 
 public class DroneMover : MonoBehaviour
 {
+    [SerializeField] public String Name = "Drone";
+
+    private Vector3 lastPosition;
+    private Vector3 currentPosition;
+    private float timeSinceLastUpdate = 0f;
+    private float velocityUpdateInterval = 0.1f;
+    private float calculatedSpeed = 0f;
+
     // Can be used for testing for movement and rotation
     [SerializeField] bool artificialMovement = true;
     [SerializeField] bool artificialRotation = true;
@@ -66,6 +74,8 @@ public class DroneMover : MonoBehaviour
 
     void Start()
     {
+        lastPosition = transform.position;
+        currentPosition = lastPosition;
         initX = gameObject.transform.position.x;
         initY = gameObject.transform.position.y;
         initZ = gameObject.transform.position.z;
@@ -98,7 +108,7 @@ public class DroneMover : MonoBehaviour
         }
         else
         {
-            SimulateRotation(motorSpeed1, motorSpeed2, motorSpeed3, motorSpeed4);
+            //SimulateRotation(motorSpeed1, motorSpeed2, motorSpeed3, motorSpeed4);
         }
 
         transform.position = getPosition();
@@ -110,9 +120,33 @@ public class DroneMover : MonoBehaviour
         return new Vector3(x, y, z);
     }
     //needs testing. Will also need scaling for when we figure that out
-    public float getSpeed()
+    // public float getSpeed()
+    // {
+    //     Debug.Log("Velocity: " + velocity.magnitude);
+    //     return velocity.magnitude;
+    // }
+    public float CalculateVelocityMagnitude()
     {
-        return velocity.magnitude;
+        timeSinceLastUpdate += Time.deltaTime;
+        
+        if (timeSinceLastUpdate >= velocityUpdateInterval)
+        {
+            currentPosition = transform.position;
+            
+            Vector3 displacement = currentPosition - lastPosition;
+            
+            calculatedSpeed = displacement.magnitude / timeSinceLastUpdate;
+            
+            lastPosition = currentPosition;
+            timeSinceLastUpdate = 0f;
+        }
+        
+        return calculatedSpeed;
+    }
+
+    public float GetCalculatedSpeed()
+    {
+        return calculatedSpeed;
     }
     public Quaternion getRotation()
     {
@@ -139,6 +173,7 @@ public class DroneMover : MonoBehaviour
         //Stuff that is reflected
         setMovement(droneData.position.x, droneData.position.y, droneData.position.z);
         setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
+        setProps(droneData.motor_rpms); //needs testing. Should work. may throw type exception if anything. edit function decl below.
         this.velocity = new Vector3(droneData.velocity.x, droneData.velocity.y, droneData.velocity.z);
         this.gyroPitch = droneData.gyro.pitch;
         this.gyroRoll = droneData.gyro.roll;
@@ -153,7 +188,7 @@ public class DroneMover : MonoBehaviour
         this.motorRpms = droneData.motor_rpms;
     }
 
-    public void setProps(char[] rotationStats)
+    public void setProps(float[] rotationStats)
     {
         // May need to change type of this depending on format received from liftoff. For now we will use char array as it is the most flexible
 
@@ -164,7 +199,7 @@ public class DroneMover : MonoBehaviour
         // Given we are going to use four propellers we only care about 17 bytes which is 136 bits
         
         // Get the number of motors if not four. WTF. just set the rotation to some number
-        int numMotors = rotationStats[0];
+        int numMotors = (int)rotationStats[0];
         
         if (numMotors != 4)
         {
@@ -236,14 +271,14 @@ public class DroneMover : MonoBehaviour
         return rotationStats;
     }
 
-    public void SimulateRotation(float motor1, float motor2, float motor3, float motor4)
-    {
-        // Create the test motor data
-        char[] testRotationStats = CreateMotorData(motor1, motor2, motor3, motor4);
+    // public void SimulateRotation(float motor1, float motor2, float motor3, float motor4)
+    // {
+    //     // Create the test motor data
+    //     char[] testRotationStats = CreateMotorData(motor1, motor2, motor3, motor4);
 
-        // Call the setRotation method to simulate
-        setProps(testRotationStats);
-    }
+    //     // Call the setRotation method to simulate
+    //     setProps(testRotationStats);
+    // }
     void SimulateMovement()
     {
         // Make the drone move in a circle

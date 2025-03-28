@@ -1,0 +1,196 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4766821069588365592
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2680277265998327531}
+  - component: {fileID: 8685916633035140192}
+  - component: {fileID: 5998183954027261436}
+  - component: {fileID: 7602627716584194204}
+  m_Layer: 5
+  m_Name: Dashboard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2680277265998327531
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766821069588365592}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8685916633035140192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766821069588365592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9cdeaee077bcf742955bca594dea26d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AMStyle:
+    m_Name: 
+    m_Normal:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Hover:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Active:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Focused:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnNormal:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnHover:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnActive:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_OnFocused:
+      m_Background: {fileID: 0}
+      m_ScaledBackgrounds: []
+      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Border:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Margin:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Padding:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Overflow:
+      m_Left: 0
+      m_Right: 0
+      m_Top: 0
+      m_Bottom: 0
+    m_Font: {fileID: 0}
+    m_FontSize: 0
+    m_FontStyle: 0
+    m_Alignment: 0
+    m_WordWrap: 0
+    m_RichText: 1
+    m_TextClipping: 0
+    m_ImagePosition: 0
+    m_ContentOffset: {x: 0, y: 0}
+    m_FixedWidth: 0
+    m_FixedHeight: 0
+    m_StretchWidth: 1
+    m_StretchHeight: 0
+  AltMeterTexture: {fileID: 2800000, guid: e01ccba4aef93a949aeac9e347782dc2, type: 3}
+  Arrow1Tex: {fileID: 2800000, guid: d1693d158fb27884e806a0b419666932, type: 3}
+  Arrow2Tex: {fileID: 2800000, guid: d1693d158fb27884e806a0b419666932, type: 3}
+  AMPntr: {fileID: 2800000, guid: c5d05c1173d21a24d83cf77593aa5f99, type: 3}
+  AMFondTex: {fileID: 2800000, guid: 38a80ceacc9c2474fb0f7915d1d82acf, type: 3}
+  AP: {fileID: 0}
+  altitudeScale: 0.1
+  posWX: -300
+  posWY: -275
+  k: 0.85
+  nx: 119.6
+  ny: 21
+  qx: 0
+  qy: 0
+  px: 22.06
+  py: -87.42
+  pntrVal: 300
+  delayValue: 1
+  AltMValue: 0.5
+  showInFirstPersonOnly: 1
+  toggleKey: 103
+--- !u!114 &5998183954027261436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766821069588365592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1830124cd32cb943b554d3f6b387aa3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BatteryMeterTexture: {fileID: 2800000, guid: 06a36f455d37645438972dd5f972d576, type: 3}
+  ArrowTex: {fileID: 2800000, guid: bc411e352bf00be488ee0fd1fac561ec, type: 3}
+  BMFondTex: {fileID: 2800000, guid: 11cd4f317451cb04490cbce8b09f95fd, type: 3}
+  mFont: {fileID: 12800000, guid: 1f757be5b12035142adc7c7f716bc268, type: 3}
+  posWX: 0
+  posWY: -275
+  textSizeX: 22.75
+  textSizeY: -99.45
+  k: 0.75
+  nx: 119.5
+  ny: 21
+  qx: 0
+  qy: 0
+  tx: 0
+  ty: 0
+  showInFirstPersonOnly: 1
+  toggleKey: 98
+--- !u!114 &7602627716584194204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4766821069588365592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ccaa1705f55a734786b9b23dd653648, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SpeedMeterTexture: {fileID: 2800000, guid: c21e4454a42a8144e80bf126a0fdd21d, type: 3}
+  ArrowTex: {fileID: 2800000, guid: 83cebe6b063158746b646e67741a2bb8, type: 3}
+  SMFondTex: {fileID: 2800000, guid: 86e05fcf25554a644ba4982f42e38585, type: 3}
+  posWX: -150
+  posWY: -275
+  k: 0.85
+  nx: 120
+  ny: 30
+  qx: 0
+  qy: 0
+  SMDelayValue: 0.85
+  SpeedValue: 0
+  speedScale: 1
+  showInFirstPersonOnly: 1
+  toggleKey: 115
