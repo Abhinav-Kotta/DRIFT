@@ -11,7 +11,7 @@ public class FuelMeter : MonoBehaviour {
     private DataManager dataManager;
     private DroneMover currentDrone;
     
-    private NoClipCam cameraController;
+    private DroneViewCam cameraController;
     [SerializeField] private bool showInFirstPersonOnly = true;
     [SerializeField] private KeyCode toggleKey = KeyCode.B;
     private bool showGauge = true;
@@ -21,7 +21,7 @@ public class FuelMeter : MonoBehaviour {
 
     void Start() {
         dataManager = DataManager.Instance;
-        cameraController = FindObjectOfType<NoClipCam>();
+        cameraController = FindObjectOfType<DroneViewCam>();
         
         k = Mathf.Clamp(k, 0.5f, 2f);
         qx = (16.5f - 6f * k) / 1.5f;
