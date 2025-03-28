@@ -50,6 +50,8 @@ public class SelectDroneScript : MonoBehaviour
     {
         GameObject newBox = Instantiate(droneBoxPrefab, contentParent);
 
+        newBox.GetComponent<SwitchCameraToDrone>().drone = drone;
+
         // Set the drone name text
         TMP_Text nameText = newBox.GetComponent<TMP_Text>();
         if (nameText != null)

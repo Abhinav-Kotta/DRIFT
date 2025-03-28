@@ -4,10 +4,9 @@ using UnityEditor;
 using UnityEditor.ShaderGraph;
 using UnityEngine;
 
-public class NoClipCam : MonoBehaviour
+public class DroneViewCam : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float ascendDescendSpeed = 5f;
     [SerializeField] private float mouseSensitivity = 2f;
 
     //array of drones. Assignment of which stream goes to which drone yet to be determined
@@ -17,7 +16,7 @@ public class NoClipCam : MonoBehaviour
     //singleton of drone. used for viewing one particular drone in the scene
     //Maybe we can get away with this being private but im'm not sure. =V=
     //Depends on statistic genetation scripts which have yet to be written.
-    public GameObject drone;
+    public DroneMover drone;
 
     //used for cycling between drones
     public int numberOfDrones;
@@ -35,39 +34,43 @@ public class NoClipCam : MonoBehaviour
     private float offsetZ = -10;
     private int mode;
 
+    private DataManager dataManager;
+
     void Start()
     {   
-        //initialize the drone to the first drone in the array
-        drone = drones[0];
-        numberOfDrones = drones.Length;
-
-        Debug.Log("Num  of drones: " + numberOfDrones);
-
         mode = 2;
-        // Lock the cursor for a better no-clip experience
-        Cursor.lockState = CursorLockMode.Locked;
+        dataManager = DataManager.Instance;
+        if(dataManager == null)
+            Debug.Log("DataManager not found.");
+        //drone = DataManager.Instance.GetSelectedDrone();
+        //Default to noCLip since there can be no drones at the start of a race
     }
 
     void Update()
     {
-        //It works but might slow down the game. maybe refactor later
-        for ( int i = 1; i <= 9; ++i )
+        if(dataManager == null)
         {
-            if ( Input.GetKeyDown( "" + i ) )
-            {
-                if(i <= numberOfDrones)
-                    drone = drones[i-1];
-            }
+            dataManager = DataManager.Instance;
+            return;
         }
-        if(Input.GetKeyDown(KeyCode.Tab))
+        if(dataManager.GetNumActiveDrones() == 0)
         {
-            drone = drones[(Array.IndexOf(drones, drone) + 1) % numberOfDrones];
+            //No drone for moving Just no clip
+            return;
         }
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            mode++;
-            mode = mode % 3;
-        }
+        drone = dataManager.GetSelectedDrone();
+        //drone = dataManager.GetSelectedDrone();
+        //Debug.Log("Mode num: " + mode + " Drone: " + dataManager.selectedDroneIndex);
+       
+        // if(Input.GetKeyDown(KeyCode.Tab))
+        // {
+        //     drone = drones[(Array.IndexOf(drones, drone) + 1) % numberOfDrones];
+        // }
+        // if(Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     mode++;
+        //     mode = mode % 3;
+        // }
         switch(mode)
         {
             case 0:
@@ -85,6 +88,7 @@ public class NoClipCam : MonoBehaviour
     }
     
     private void firstPerson(){
+
         followX = drone.transform.position.x;
         followY = drone.transform.position.y;
         //offset so that camera is slightly in front of drone
@@ -97,63 +101,46 @@ public class NoClipCam : MonoBehaviour
         transform.rotation = Quaternion.Euler(followRoll, followPitch, followYaw);
         transform.position = new Vector3(followX, followY, followZ);
     }
+
+    //Needs refactoring. This is a mess
     private void noClip(){
-        // Get WASD input for movement along the XZ plane
-        float moveX = Input.GetAxis("Horizontal");
-        float moveZ = Input.GetAxis("Vertical");
-        // Calculate forward/backward/left/right movement
-        moveDirection = (transform.right * moveX + transform.forward * moveZ) * moveSpeed;
-
-        // Ascend and descend with Q and E
-        if (Input.GetKey(KeyCode.Q))
+        // Get the ControllerInput instance
+        ControllerInput controllerInput = FindObjectOfType<ControllerInput>();
+        if (controllerInput == null)
         {
-            moveDirection += transform.up * ascendDescendSpeed;
-        }
-        if (Input.GetKey(KeyCode.E))
-        {
-            moveDirection -= transform.up * ascendDescendSpeed;
+            Debug.LogError("ControllerInput not found in the scene.");
+            return;
         }
 
-        // Apply the movement
-        transform.position += moveDirection * Time.deltaTime;
+        // Get stick inputs
+        Vector2 leftStick = controllerInput.LeftStickInput;  // Movement input
+        Vector2 rightStick = controllerInput.RightStickInput; // Rotation input
 
-        // Handle mouse look
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        // Use left stick for movement
+        Vector3 moveDirection = new Vector3(leftStick.x, 0, leftStick.y) * moveSpeed * Time.deltaTime;
+        transform.Translate(moveDirection, Space.Self);
 
-        // Rotate the camera based on mouse input
-        transform.Rotate(Vector3.up, mouseX, Space.World);
-        transform.Rotate(Vector3.right, -mouseY, Space.Self);
-        transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0);
+        // Use right stick for rotation
+        float rotationX = -rightStick.y * mouseSensitivity; // Pitch (up/down)
+        float rotationY = rightStick.x * mouseSensitivity;  // Yaw (left/right)
+        transform.Rotate(rotationX, rotationY, 0, Space.Self);
     }
     private Vector3 findAngleFromCameraToDrone(){
         return new Vector3(drone.transform.position.x - transform.position.x, drone.transform.position.y - transform.position.y, drone.transform.position.z - transform.position.z);
     }
     private void thirdPerson(){
-        Vector3 temp = findAngleFromCameraToDrone();
-
-
-        //dont ask me how this works. but it does. Please don't touch
-        //make sure angle doesn't change wtih scrolling. So multiply the scroll delta by the normalized y/z component of the angle that way it doesn't change the angle
-        offsetZ += (Input.mouseScrollDelta.y * temp.normalized.z);
-        offsetY += (Input.mouseScrollDelta.y * temp.normalized.y);
-        //make sure angle doesn't change with scrolling
-        //Debug.Log("If this value changes from scrolling alone it's fucked -> Tan y/z is" + Math.Atan(offsetY/offsetZ));
-
-        followX = drone.transform.position.x + offsetX;
-        followY = drone.transform.position.y + offsetY;
-        followZ = drone.transform.position.z + offsetZ;
         
-        //make sure angle doesn't change with scrolling
-        //Debug.Log("If this value changes from scrolling alone it's fucked -> Tan y/z is" + Math.Atan(offsetY/offsetZ));
-
-        transform.position = new Vector3(followX, followY, followZ);
-        transform.forward = temp.normalized;
     }
 
     public int GetCurrentMode()
     {
         return mode;
     }
-
+    public int cycleMode()
+    {
+        mode++;
+        mode = mode % 3;
+        return mode;
+    }
+    
 }
