@@ -5,6 +5,8 @@ using UnityEngine.InputSystem.XR;
 
 public class ControllerInput : MonoBehaviour
 {
+    public static ControllerInput Instance { get; private set; } // Singleton instance
+
     bool rightPrimaryPressedLast = false;
     bool rightSecondaryPressedLast = false;
     bool leftPrimaryPressedLast = false;
@@ -15,6 +17,20 @@ public class ControllerInput : MonoBehaviour
     // Properties to store stick inputs
     public Vector2 LeftStickInput { get; private set; }
     public Vector2 RightStickInput { get; private set; }
+
+    void Awake()
+    {
+        // Ensure only one instance of ControllerInput exists
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.LogError("Multiple instances of ControllerInput detected. Destroying duplicate.");
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
@@ -68,7 +84,7 @@ public class ControllerInput : MonoBehaviour
             {
                 if (primary.isPressed && !leftPrimaryPressedLast)
                     Debug.Log("Left X Button Just Pressed");
-            
+
                 leftPrimaryPressedLast = primary.isPressed;
                 droneViewCam.cycleMode();
             }
