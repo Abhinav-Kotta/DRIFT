@@ -104,7 +104,7 @@ public class RaceClient : MonoBehaviour
     [SerializeField]
     public string raceUdp;
     private WebSocket websocket;
-    private RaceResponse currentRace;
+    public RaceResponse currentRace;
     private bool isListening = false;
 
     async void Start()
@@ -121,6 +121,7 @@ public class RaceClient : MonoBehaviour
             Debug.Log("Starting race connection initialization...");
 
             currentRace = await ListRaces();
+
             //testing code ignore unless needed
             // if (currentRace == null)
             // {
@@ -268,7 +269,7 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            string wsUrl = $"ws://35.185.81.190:8765/race/{raceUdp}";
+            string wsUrl = $"ws://35.185.81.190:8765/race/38503";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
@@ -303,14 +304,18 @@ public class RaceClient : MonoBehaviour
                 try
                 {
                     var message = Encoding.UTF8.GetString(bytes);
-                    Debug.Log($"[WS] Received message length: {bytes.Length}");
-                    Debug.Log($"[WS] Decoded message: {message}");
+                    // Debug.Log($"[WS] Received message length: {bytes.Length}");
+                    // Debug.Log($"[WS] Decoded message: {message}");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
-
-                    Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                    // Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
+                    if (DataManager.Instance == null)
+                    {
+                        Debug.LogError("[WS] DataManager.Instance is null! Make sure DataManager exists in the scene.");
+                        return;
+                    }
                     DataManager.Instance.UpdateDroneData(droneData);
                 }
                 catch (Exception e)
