@@ -162,9 +162,9 @@ public class StatManager : MonoBehaviour
 
         // Generate position values based on sine and cosine functions
         float time = Time.time;
-        float x = Mathf.Cos(time) * 10f;
+        float x = 0;
         float y = (Mathf.Sin(time) * 10f) + 20f;
-        float z = 0f; // Keep z constant for simplicity
+        float z = Mathf.Cos(time) * 10f; // Keep z constant for simplicity
 
         // Create a new DroneData instance
         DroneData droneData = new DroneData

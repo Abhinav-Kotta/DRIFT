@@ -98,7 +98,7 @@ public class DroneViewCam : MonoBehaviour
         // Follow the drone's position
         followX = drone.transform.position.x;
         followY = drone.transform.position.y;
-        followZ = drone.transform.position.z; // Offset so the camera is slightly in front of the drone
+        followZ = drone.transform.position.z+2; // Offset so the camera is slightly in front of the drone
 
         // Get the drone's rotation
         followRoll = drone.transform.rotation.eulerAngles.x;
