@@ -13,7 +13,7 @@ public class DroneMover : MonoBehaviour
     private float velocityUpdateInterval = 0.1f;
     private float calculatedSpeed = 0f;
     
-    private int numGates;
+    private int numGates; 
 
     // Can be used for testing for movement and rotation
     [SerializeField] bool artificialMovement = true;
@@ -24,6 +24,7 @@ public class DroneMover : MonoBehaviour
 
     // Testing purposes. Used to simulate movement rolling and pitching behavior
     public float angle = 0f;
+
 
     public string DID { get; private set; } // Drone ID. Used for filter through total data for movement.
     // Initial position of the drone, used only for simulating movement
@@ -84,20 +85,22 @@ public class DroneMover : MonoBehaviour
 
         y = initY;
 
-        propeller1 = transform.Find("propeller.1").gameObject;
-        propeller2 = transform.Find("propeller.2").gameObject;
-        propeller3 = transform.Find("propeller.3").gameObject;  
-        propeller4 = transform.Find("propeller.4").gameObject;
-        if (propeller1 == null || propeller2 == null || propeller3 == null || propeller4 == null)
-        {
-            Debug.LogError("Propellers not found");
-        }
+        // propeller1 = transform.Find("propeller.1").gameObject;
+        // propeller2 = transform.Find("propeller.2").gameObject;
+        // propeller3 = transform.Find("propeller.3").gameObject;  
+        // propeller4 = transform.Find("propeller.4").gameObject;
+        // if (propeller1 == null || propeller2 == null || propeller3 == null || propeller4 == null)
+        // {
+        //     Debug.LogError("Propellers not found");
+        // }
     }
 
     void Update()
     {
-
-        transform.position = getPosition();
+        if(artificialMovement)
+            SimulateMovement();
+        //Comment out for testing
+        //transform.position = getPosition();
         //transform.rotation = getRotation();
     }
 
@@ -265,9 +268,12 @@ public class DroneMover : MonoBehaviour
     //     // Call the setRotation method to simulate
     //     setProps(testRotationStats);
     // }
+    //private float speedChangeTimer = 0f;
     void SimulateMovement()
     {
-        // Make the drone move in a circle
+         
+
+        // // Make the drone move in a circle
         x = initX + (float)Math.Cos(angle) * 10f;
         z = initZ + (float)Math.Sin(angle) * 10f; 
 
@@ -279,11 +285,33 @@ public class DroneMover : MonoBehaviour
         // Period of the movement over a time period
         angle += artificalSpeed * Time.deltaTime;
 
+        
         setMovement(x, y, z);
+
+
+
+        // speedChangeTimer += Time.deltaTime;
+
+        // // Change the speed every 0.5 seconds
+        // if (speedChangeTimer >= 0.5f)
+        // {
+        // artificalSpeed = UnityEngine.Random.Range(7f, 20f); // Generate a new random speed
+        // speedChangeTimer = 0f; // Reset the timer
+        // }
+
+        // // Move the drone in the Z direction based on the random speed
+        // z += artificalSpeed * Time.deltaTime;
+        // transform.position = new Vector3(transform.position.x, transform.position.y, z);
+
     }
     public void PassGate()
     {
         numGates++;
-        Debug.Log("Passed gate: " + numGates);
+        //Debug.Log("Passed gate: " + numGates);
+        DataManager.Instance.GetLeaderBoard();
+    }
+    public int getPlacement()
+    {
+        return numGates;
     }
 }
