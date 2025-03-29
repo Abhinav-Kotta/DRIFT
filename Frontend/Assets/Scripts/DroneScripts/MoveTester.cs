@@ -12,6 +12,8 @@ public class DroneMover : MonoBehaviour
     private float timeSinceLastUpdate = 0f;
     private float velocityUpdateInterval = 0.1f;
     private float calculatedSpeed = 0f;
+    
+    private int numGates;
 
     // Can be used for testing for movement and rotation
     [SerializeField] bool artificialMovement = true;
@@ -94,25 +96,9 @@ public class DroneMover : MonoBehaviour
 
     void Update()
     {
-        if (!artificialMovement)
-        {
-            setMovement(x, y, z);
-        }
-        else
-        {
-            SimulateMovement();
-        }
-        if (!artificialRotation)
-        {
-            // setRotation(/*some data from liftoff as char array*/);
-        }
-        else
-        {
-            //SimulateRotation(motorSpeed1, motorSpeed2, motorSpeed3, motorSpeed4);
-        }
 
         transform.position = getPosition();
-        transform.rotation = getRotation();
+        //transform.rotation = getRotation();
     }
 
     public Vector3 getPosition()
@@ -156,9 +142,9 @@ public class DroneMover : MonoBehaviour
     public void setMovement(float x, float y, float z)
     {
         // Set the position of the drone
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = x *  4.9117f;
+        this.y = y * 5.0f;
+        this.z = z * 4.9109f;
     }
 
     public void setRotation(float x, float y, float z, float w)
@@ -201,33 +187,33 @@ public class DroneMover : MonoBehaviour
         // Get the number of motors if not four. WTF. just set the rotation to some number
         int numMotors = (int)rotationStats[0];
         
-        if (numMotors != 4)
-        {
-            Debug.LogError("Number of motors is not 4");
-            // Front two propellers
-            propeller1.transform.Rotate(0, 0, 1200 * Time.deltaTime);
-            propeller2.transform.Rotate(0, 0, 1200 * Time.deltaTime);
+        // if (numMotors != 4)
+        // {
+        //     Debug.LogError("Number of motors is not 4");
+        //     // Front two propellers
+        //     propeller1.transform.Rotate(0, 0, 1200 * Time.deltaTime);
+        //     propeller2.transform.Rotate(0, 0, 1200 * Time.deltaTime);
 
-            // Back two propellers
-            propeller3.transform.Rotate(0, 0, -1200 * Time.deltaTime);
-            propeller4.transform.Rotate(0, 0, -1200 * Time.deltaTime);
-            return;
-        }
+        //     // Back two propellers
+        //     propeller3.transform.Rotate(0, 0, -1200 * Time.deltaTime);
+        //     propeller4.transform.Rotate(0, 0, -1200 * Time.deltaTime);
+        //     return;
+        // }
        
-        // 17 bytes total. 1 byte for number of motors and 4 floats (which are 4 bytes total) for each motor
-        // Decode the floats for each motor (each float is 4 bytes)
-        float motor1 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[1], (byte)rotationStats[2], (byte)rotationStats[3], (byte)rotationStats[4] }, 0);
-        float motor2 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[5], (byte)rotationStats[6], (byte)rotationStats[7], (byte)rotationStats[8] }, 0);
-        float motor3 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[9], (byte)rotationStats[10], (byte)rotationStats[11], (byte)rotationStats[12] }, 0);
-        float motor4 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[13], (byte)rotationStats[14], (byte)rotationStats[15], (byte)rotationStats[16] }, 0);
+        // // 17 bytes total. 1 byte for number of motors and 4 floats (which are 4 bytes total) for each motor
+        // // Decode the floats for each motor (each float is 4 bytes)
+        // float motor1 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[1], (byte)rotationStats[2], (byte)rotationStats[3], (byte)rotationStats[4] }, 0);
+        // float motor2 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[5], (byte)rotationStats[6], (byte)rotationStats[7], (byte)rotationStats[8] }, 0);
+        // float motor3 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[9], (byte)rotationStats[10], (byte)rotationStats[11], (byte)rotationStats[12] }, 0);
+        // float motor4 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[13], (byte)rotationStats[14], (byte)rotationStats[15], (byte)rotationStats[16] }, 0);
 
-        // Front two propellers
-        propeller1.transform.Rotate(0, 0, motor1 * Time.deltaTime);
-        propeller2.transform.Rotate(0, 0, motor2 * Time.deltaTime);
+        // // Front two propellers
+        // propeller1.transform.Rotate(0, 0, motor1 * Time.deltaTime);
+        // propeller2.transform.Rotate(0, 0, motor2 * Time.deltaTime);
 
-        // Back two propellers. May need to change the sign of the rotation if propeller value from liftoff is signed
-        propeller3.transform.Rotate(0, 0, -motor3 * Time.deltaTime);
-        propeller4.transform.Rotate(0, 0, -motor4 * Time.deltaTime);
+        // // Back two propellers. May need to change the sign of the rotation if propeller value from liftoff is signed
+        // propeller3.transform.Rotate(0, 0, -motor3 * Time.deltaTime);
+        // propeller4.transform.Rotate(0, 0, -motor4 * Time.deltaTime);
     }
 
     // Getters
@@ -294,5 +280,10 @@ public class DroneMover : MonoBehaviour
         angle += artificalSpeed * Time.deltaTime;
 
         setMovement(x, y, z);
+    }
+    public void PassGate()
+    {
+        numGates++;
+        Debug.Log("Passed gate: " + numGates);
     }
 }

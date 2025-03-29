@@ -44,7 +44,7 @@ public class RaceCardUI : MonoBehaviour
         Debug.Log("[RaceCardUI] PlayerPrefs saved. Loading SampleScene...");
 
         // Load the Sample Scene
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("TestingOverlay");
     }
 
 }
