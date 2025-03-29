@@ -193,13 +193,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 2
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: 1.41
-  y: 1.18
-  z: 0.91
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
@@ -2594,13 +2594,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 1.4
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: -0.74
-  y: -2.1
-  z: 0.98
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
@@ -3604,13 +3604,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 2
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: 1.41
-  y: 1.18
-  z: 0.91
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
@@ -3796,13 +3796,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 2
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: 1.41
-  y: 1.18
-  z: 0.91
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
@@ -4340,7 +4340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1394bcb3eb8674c5a859000abf0642cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  raceUdp: 49365
+  raceUdp: 
   currentRace:
     race_id: 
     udp_port: 0
@@ -4364,13 +4364,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 0
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: 1.31
-  y: 1.01
-  z: -1.78
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
@@ -4518,13 +4518,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Drone
-  artificialMovement: 0
-  artificialRotation: 0
-  artificalSpeed: 2
+  artificialMovement: 1
+  artificialRotation: 1
+  artificalSpeed: 10
   angle: 0
-  x: 1.41
-  y: 1.18
-  z: 0.91
+  x: 0
+  y: 0
+  z: 0
   roll: 0
   pitch: 0
   yaw: 0
