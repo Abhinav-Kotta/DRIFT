@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcaa46d91b931b4ea4dcb2beb62726e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  needFakeData: 1
+  needFakeData: 0
   showStats: 1
   showVelocity: 1
   showPitch: 1
@@ -268,6 +268,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -604,6 +605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2361b37478c0ca4fb97d8201061d054, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedDroneIndex: 0
 --- !u!1 &224344788
 GameObject:
   m_ObjectHideFlags: 0
@@ -774,8 +776,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 6
-  m_fontSizeBase: 6
+  m_fontSize: 2
+  m_fontSizeBase: 2
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2459,63 +2461,6 @@ MonoBehaviour:
   AltMValue: 0.5
   showInFirstPersonOnly: 1
   toggleKey: 103
---- !u!1001 &720473932
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 16.95
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 644199312304227266, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2679736062822650662, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
-      propertyPath: m_Name
-      value: Arena
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 696d8bd593ccfee47a29309fcb6b5f85, type: 3}
 --- !u!1001 &764065459
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2669,6 +2614,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 1.4
@@ -2772,6 +2718,71 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 900839103}
   m_CullTransparentMesh: 1
+--- !u!1001 &990594618
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 903136006445238136, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_Name
+      value: ArenaDone
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4093506761036407547, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: efc79fdcd62cd0443a09a5ad38e8622b, type: 3}
 --- !u!1 &1077887091
 GameObject:
   m_ObjectHideFlags: 0
@@ -3360,6 +3371,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -3637,6 +3649,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -4181,7 +4194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1394bcb3eb8674c5a859000abf0642cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  raceUdp: 37967
+  raceUdp: 44215
   currentRace:
     race_id: 
     udp_port: 0
@@ -4204,6 +4217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 1
@@ -4419,6 +4433,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56fc55d9a0de8524c93f24ccbddbc3a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Name: Drone
   artificialMovement: 0
   artificialRotation: 0
   artificalSpeed: 2
@@ -4478,7 +4493,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1749095167}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4487,8 +4502,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.35700002}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 18.75, y: 2.1423}
-  m_SizeDelta: {x: -17.2812, y: -0.0155}
+  m_AnchoredPosition: {x: 28.3, y: 8.4}
+  m_SizeDelta: {x: -27.721, y: -2.3475}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1749095169
 MonoBehaviour:
@@ -4563,7 +4578,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 2
 --- !u!222 &1749095171
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4584,12 +4599,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5276dd3a83d99405f9fa7dfae8933b69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  exitButton: {fileID: 1749095169}
-  popupPanel: {fileID: 14151201}
-  popupText: {fileID: 2062414152}
-  apiServerIP: 
-  apiPort: 8000
-  raceId: 
+  exitRaceButton: {fileID: 0}
+  initialCheckDelay: 1
+  retryDelay: 3
 --- !u!1 &1767172290
 GameObject:
   m_ObjectHideFlags: 0
@@ -5492,7 +5504,7 @@ SceneRoots:
   - {fileID: 216018839}
   - {fileID: 35560672}
   - {fileID: 1599029799}
-  - {fileID: 720473932}
+  - {fileID: 990594618}
   - {fileID: 303057707}
   - {fileID: 1406695689}
   - {fileID: 1716954652}

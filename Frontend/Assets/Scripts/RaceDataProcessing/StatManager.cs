@@ -94,7 +94,7 @@ public class StatManager : MonoBehaviour
             if (selectedDrone != null)
             {
                 // Update the text with the selected drone's data
-                Debug.Log("updating text");
+                // Debug.Log("updating text");
                 textBox.text = UpdateText(selectedDrone);
             }
 
