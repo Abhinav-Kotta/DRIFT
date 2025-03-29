@@ -181,17 +181,21 @@ async def get_saved_race(race_id: str, db=Depends(get_db)):
 async def get_user_saved_races(user_id: str, db=Depends(get_db)):
     try:
         races = await db.fetch(
-            "SELECT race_id, race_name, drift_map, created_at, user_id, race_size_bytes FROM races WHERE user_id = $1",
+            """
+            SELECT race_id, race_name, drift_map, created_at, user_id, race_size_bytes 
+            FROM races 
+            WHERE user_id::jsonb @> to_jsonb(array[$1])
+            """,
             user_id
         )
         if not races:
             raise HTTPException(status_code=404, detail="No races found for this user")
-        
+
         return {"status": "success", "races": races}
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user races: {str(e)}")
-    
+
 # For updating a saved race: 
 @app.put("/update_race/{race_id}")
 async def update_saved_race(race_id: str, request: SaveRaceRequest, db=Depends(get_db)):

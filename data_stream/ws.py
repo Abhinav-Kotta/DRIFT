@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Dict, Set
 from pympler import asizeof # remove this bitch later
 import sys # remove this bitch later
+import time
 
 WS_PORT = 8765
 
@@ -114,14 +115,19 @@ class RaceServer:
         self.udp_servers[udp_port] = udp_server
         print(f'UDP Server listening on port {udp_port}')
 
+        firstPacket = True
         while True:
             try:
                 data, addr = udp_server.recvfrom(4096)
                 if len(data) >= 81:
                     try:
+                        if (firstPacket):
+                            startTime = time.time()
+                            firstPacket = False
+                    
                         unpacked_data = struct.unpack('<f 3f 4f 3f 3f 4f 2f B 4f', data)
 
-                        timestamp = unpacked_data[0]
+                        timestamp = time.time() - startTime
                         position = unpacked_data[1:4]
                         attitude = unpacked_data[4:8]
                         velocity = unpacked_data[8:11]
