@@ -288,7 +288,7 @@ public class RaceClient : MonoBehaviour
     {
         try
         {
-            string wsUrl = $"ws://35.185.81.190:8765/race/38503";
+            string wsUrl = $"ws://35.185.81.190:8765/race/44215";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
@@ -319,7 +319,7 @@ public class RaceClient : MonoBehaviour
 
             websocket.OnMessage += (bytes) =>
             {
-                Debug.Log("[WS] OnMessage event fired");
+                // Debug.Log("[WS] OnMessage event fired");
                 try
                 {
                     var message = Encoding.UTF8.GetString(bytes);
@@ -335,6 +335,7 @@ public class RaceClient : MonoBehaviour
                         Debug.LogError("[WS] DataManager.Instance is null! Make sure DataManager exists in the scene.");
                         return;
                     }
+                    // Debug.Log("updating drone data");
                     DataManager.Instance.UpdateDroneData(droneData);
                 }
                 catch (Exception e)

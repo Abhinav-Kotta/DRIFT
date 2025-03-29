@@ -71,7 +71,9 @@ public class DataManager : MonoBehaviour
                 }
                 if(activeDroneMovers.Count == 0)
                 {
+                    Debug.Log("setting the selected drone: ");
                     selectedDrone = drone;
+                    Debug.Log("Drone has been set");
                 }
                 activeDroneMovers.Add(drone);
                 onDroneAdded?.Invoke(drone);
@@ -86,7 +88,7 @@ public class DataManager : MonoBehaviour
 
         if (drone != null)
         {
-            Debug.Log("droneId recognized");
+            // Debug.Log("droneId recognized");
             drone.SetDroneData(droneData);
         }
     }
@@ -100,6 +102,7 @@ public class DataManager : MonoBehaviour
     {
         if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
+            Debug.Log("drone set: ", drone);
             selectedDrone = drone;
         }
     }

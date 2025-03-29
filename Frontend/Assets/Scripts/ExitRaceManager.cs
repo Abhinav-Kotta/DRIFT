@@ -1,327 +1,176 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using UnityEngine.EventSystems;
-using System.Collections;
 using UnityEngine.Networking;
 using System;
-using System.Text;
 
-public class SimpleExitRaceController : MonoBehaviour
+public class ExitRaceButton : MonoBehaviour
 {
-    [SerializeField] private Button exitButton;
-    [SerializeField] private GameObject popupPanel;
-    [SerializeField] private TextMeshProUGUI popupText;
-    
-    // References to existing managers
-    private DataManager dataManager;
-    private StatManager statManager;
-    private UserManager userManager;
-    
+    [SerializeField] private Button exitRaceButton;
+    [SerializeField] private float initialCheckDelay = 1f; // Time to wait before checking race creator
+    [SerializeField] private float retryDelay = 3f; // Time to wait before retrying if race client isn't ready
 
-    [SerializeField] private string apiServerIP; 
-    [SerializeField] private int apiPort = 8000;
-    [SerializeField] private string raceId;
-    
-    private int raceCreatorId = -1;
-    private bool isCheckingCreator = false;
-    
-    void Awake()
-    {
-        // Initialize apiServerIP here instead of at declaration
-        apiServerIP = ConfigLoader.GetApiUrl();
-    }
-    
+    private string baseApiUrl;
+    private RaceClient raceClient;
+    private UserManager userManager;
+    private bool isCreator = false;
+
     void Start()
     {
-        // Get references to managers
-        dataManager = DataManager.Instance;
-        if (dataManager == null)
-        {
-            Debug.LogWarning("DataManager instance not found!");
-        }
-        
-        statManager = FindObjectOfType<StatManager>();
-        if (statManager == null)
-        {
-            Debug.LogWarning("StatManager not found in scene!");
-        }
-
-        // Get reference to UserManager
+        // Get references
+        baseApiUrl = ConfigLoader.GetApiUrl();
+        raceClient = FindObjectOfType<RaceClient>();
         userManager = UserManager.Instance;
-        if (userManager == null)
-        {
-            Debug.LogWarning("UserManager instance not found!");
-        }
-        
-        // Ensure EventSystem exists
-        if (FindObjectOfType<EventSystem>() == null)
-        {
-            GameObject eventSystem = new GameObject("EventSystem");
-            eventSystem.AddComponent<EventSystem>();
-            eventSystem.AddComponent<StandaloneInputModule>();
-            Debug.Log("Created EventSystem");
-        }
-        
-        // Set up button (initially hidden)
-        if (exitButton != null)
-        {
-            exitButton.gameObject.SetActive(false);
-            
-            exitButton.interactable = true;
-            
-            Image buttonImage = exitButton.GetComponent<Image>();
-            if (buttonImage != null)
-            {
-                buttonImage.raycastTarget = true;
-            }
-            
-            exitButton.onClick.RemoveAllListeners();
-            exitButton.onClick.AddListener(OnButtonClick);
-            
-            Debug.Log("Button setup complete. Initially hidden.");
-        }
-        else
-        {
-            Debug.LogError("Exit button reference is missing!");
-        }
-        
-        // Hide popup initially
-        if (popupPanel != null)
-        {
-            popupPanel.SetActive(false);
-        }
 
-        // Get selected drone ID if raceId is not set and we have a dataManager
-        if (string.IsNullOrEmpty(raceId) && dataManager != null)
-        {
-            DroneMover selectedDrone = dataManager.GetSelectedDrone();
-            if (selectedDrone != null)
-            {
-                raceId = selectedDrone.DID;
-                Debug.Log($"Using drone ID as race ID: {raceId}");
-            }
-        }
+        // Get reference to button if not assigned
+        if (exitRaceButton == null)
+            exitRaceButton = GetComponent<Button>();
 
-        if (!string.IsNullOrEmpty(raceId) && userManager != null && userManager.IsLoggedIn)
-        {
-            StartCoroutine(CheckRaceCreator());
-        }
-        else
-        {
-            Debug.LogWarning("Cannot check race creator: Missing race ID or user not logged in");
-        }
+        // Initially hide the button by making it non-interactable and transparent
+        exitRaceButton.interactable = false;
+        
+        // Make the button visually hidden but keep GameObject active
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 0; // Make it invisible
+
+        // Add listener to the button click event
+        exitRaceButton.onClick.AddListener(OnExitRaceClicked);
+        
+        // Start checking if current user is race creator
+        StartCoroutine(CheckRaceCreator());
     }
 
-    private IEnumerator CheckRaceCreator()
+    IEnumerator CheckRaceCreator()
     {
-        if (isCheckingCreator)
+        // Initial delay to allow other components to initialize
+        yield return new WaitForSeconds(initialCheckDelay);
+
+        // Wait until race client has race information
+        while (raceClient == null || raceClient.currentRace == null || string.IsNullOrEmpty(raceClient.currentRace.race_id))
         {
-            yield break;
+            Debug.Log("Waiting for race information to be available...");
+            yield return new WaitForSeconds(retryDelay);
+            
+            // If raceClient is still null, try to find it again
+            if (raceClient == null)
+                raceClient = FindObjectOfType<RaceClient>();
         }
 
-        isCheckingCreator = true;
-        Debug.Log("Checking if current user is race creator...");
-
-        string apiUrl = $"http://{apiServerIP}:{apiPort}/watch_race/{raceId}";
+        // Race information is now available
+        string raceId = raceClient.currentRace.race_id;
+        Debug.Log($"Race ID found: {raceId}. Checking if current user is the creator...");
         
-        UnityWebRequest request = UnityWebRequest.Get(apiUrl);
-        request.SetRequestHeader("Content-Type", "application/json");
+        // Call the watch_race endpoint to get creator info
+        yield return StartCoroutine(GetRaceCreatorInfo(raceId));
         
-        yield return request.SendWebRequest();
-        
-        if (request.result == UnityWebRequest.Result.Success)
+        // Update button visibility based on creator status
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (isCreator)
         {
-            string responseJson = request.downloadHandler.text;
-            Debug.Log($"Race info response: {responseJson}");
-            
-            try
+            exitRaceButton.interactable = true;
+            canvasGroup.alpha = 1; // Make it visible
+        }
+        else
+        {
+            exitRaceButton.interactable = false;
+            canvasGroup.alpha = 0; // Keep it invisible
+        }
+        Debug.Log($"Exit race button visibility set to: {isCreator}");
+    }
+
+    IEnumerator GetRaceCreatorInfo(string raceId)
+    {
+        string watchRaceUrl = $"{baseApiUrl}/watch_race/{raceId}";
+        
+        using (UnityWebRequest www = UnityWebRequest.Get(watchRaceUrl))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
             {
-                string responseText = Encoding.UTF8.GetString(request.downloadHandler.data);
-                
-                if (responseText.Contains("\"user_id\":"))
+                Debug.LogError($"Error fetching race creator info: {www.error}");
+                isCreator = false;
+            }
+            else
+            {
+                try
                 {
-                    int userIdIndex = responseText.IndexOf("\"user_id\":") + "\"user_id\":".Length;
-                    int commaIndex = responseText.IndexOf(",", userIdIndex);
-                    if (commaIndex == -1)
-                    {
-                        commaIndex = responseText.IndexOf("}", userIdIndex);
-                    }
+                    string jsonResponse = www.downloadHandler.text;
+                    Debug.Log($"Race info response: {jsonResponse}");
                     
-                    string userIdValue = responseText.Substring(userIdIndex, commaIndex - userIdIndex).Trim();
-                    userIdValue = userIdValue.Replace("\"", "").Trim();
-                    
-                    if (int.TryParse(userIdValue, out int parsedId))
+                    // Parse the response to get race_creator
+                    RaceCreatorResponse response = JsonUtility.FromJson<RaceCreatorResponse>(jsonResponse);
+                    Debug.Log($"JSON converted response: {response}");
+                    Debug.Log("RaceCreatorResponse Contents:");
+                    Debug.Log($"  race_id: {response.race_id}");
+                    Debug.Log($"  race_creator: {response.race_creator}");
+                    Debug.Log($"  udp_port: {response.udp_port}");
+                    Debug.Log($"  ws_port: {response.ws_port}");
+                    Debug.Log($"  status: {response.status}");
+                    // Check if current user is the race creator
+                    Debug.Log($"User manager: {userManager}");
+                    if (userManager != null && userManager.IsRaceCreator(response.race_creator))
                     {
-                        raceCreatorId = parsedId;
-                        Debug.Log($"Extracted race creator ID: {raceCreatorId}");
-                        
-                        if (userManager != null)
-                        {
-                            bool isCreator = userManager.UserId == raceCreatorId;
-                            Debug.Log($"Current user ID: {userManager.UserId}, Is creator: {isCreator}");
-                            
-                            if (exitButton != null)
-                            {
-                                exitButton.gameObject.SetActive(isCreator);
-                                Debug.Log($"Exit button visibility set to: {isCreator}");
-                            }
-                        }
+                        isCreator = true;
+                        Debug.Log($"Current user (ID: {userManager.UserId}) is the race creator (ID: {response.race_creator})");
                     }
                     else
                     {
-                        Debug.LogError($"Failed to parse user ID '{userIdValue}' as an integer");
+                        isCreator = false;
+                        Debug.Log($"Current user (ID: {userManager.UserId}) is NOT the race creator (ID: {response.race_creator})");
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    Debug.LogWarning("Could not find user_id in response");
+                    Debug.LogError($"Error parsing race creator info: {e.Message}");
+                    isCreator = false;
                 }
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error parsing race info: {e.Message}");
-            }
         }
-        else
-        {
-            Debug.LogError($"Error fetching race info: {request.error}");
-        }
-        
-        isCheckingCreator = false;
     }
-    
-    public void OnButtonClick()
-    {
-        Debug.Log("Exit button clicked!");
-        
-        if (exitButton != null)
-        {
-            exitButton.interactable = false;
-        }
-        
-        if (string.IsNullOrEmpty(raceId))
-        {
-            ShowPopup("Error: No race ID found. Please set a race ID.", false);
-            if (exitButton != null)
-            {
-                exitButton.interactable = true;
-            }
-            return;
-        }
-        
-        StartCoroutine(EndRace());
-    }
-    
-    private IEnumerator EndRace()
-    {
-        ShowPopup("Ending race...", true);
-        
-        string apiUrl = $"http://{apiServerIP}:{apiPort}/end_race/{raceId}";
-        Debug.Log($"Calling API: {apiUrl}");
-        
-        UnityWebRequest request = UnityWebRequest.Delete(apiUrl);
-        request.SetRequestHeader("Content-Type", "application/json");
-        
-        yield return request.SendWebRequest();
-        
-        if (request.result == UnityWebRequest.Result.Success)
-        {
-            Debug.Log("Race ended successfully: " + request.downloadHandler.text);
-            ShowPopup("Race ended successfully!", true);
-            
-            if (statManager != null && statManager.needFakeData)
-            {
-                statManager.needFakeData = false;
-                Debug.Log("Disabled fake data generation in StatManager");
-            }
-            
-            yield return new WaitForSeconds(2.0f);
-            
 
-        }
-        else
+    void OnExitRaceClicked()
+    {
+        if (isCreator && raceClient != null && raceClient.currentRace != null)
         {
-            Debug.LogError("Error calling API: " + request.error);
-            ShowPopup("Failed to end race. Please try again.", false);
-            
-            if (exitButton != null)
+            StartCoroutine(EndRace(raceClient.currentRace.race_id));
+        }
+    }
+
+    IEnumerator EndRace(string raceId)
+    {
+        string endRaceUrl = $"{baseApiUrl}/end_race/{raceId}";
+        Debug.Log($"end race url: {endRaceUrl}");
+        using (UnityWebRequest www = UnityWebRequest.Delete(endRaceUrl))
+        {
+            www.downloadHandler = new DownloadHandlerBuffer();
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
             {
-                exitButton.interactable = true;
+                Debug.LogError($"Error ending race: {www.error}");
+                // Show error message to user
+            }
+            else
+            {
+                Debug.Log($"Race ended successfully: {www.downloadHandler.text}");
+                
+                // Handle race end - maybe return to menu or lobby scene
+                // Example: SceneManager.LoadScene("MenuScene");
             }
         }
     }
-    
-    private void ShowPopup(string message, bool success)
-    {
-        Debug.Log($"ShowPopup called with message: {message}");
-        
-        if (popupPanel == null || popupText == null)
-        {
-            Debug.LogError("Popup panel or text is null!");
-            return;
-        }
-        
-        popupText.rectTransform.localRotation = Quaternion.identity;
-        
-        popupText.enableWordWrapping = true;
-        popupText.alignment = TextAlignmentOptions.Center;
-        
-        popupText.text = message;
-        popupText.color = success ? Color.white : new Color(1f, 0.5f, 0.5f);
-        
-        RectTransform panelRect = popupPanel.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(400, 200);
-        
-        popupPanel.SetActive(true);
-        
-        if (success)
-        {
-            Invoke("HidePopup", 5f);
-        }
-    }
-    
-    private void HidePopup()
-    {
-        if (popupPanel != null)
-        {
-            Debug.Log("Hiding popup panel");
-            popupPanel.SetActive(false);
-        }
-    }
-    
-    public void SetRaceId(string id)
-    {
-        raceId = id;
-        Debug.Log($"Race ID set to: {raceId}");
-        
-        if (!string.IsNullOrEmpty(raceId) && userManager != null && userManager.IsLoggedIn)
-        {
-            StartCoroutine(CheckRaceCreator());
-        }
-    }
-    
-    public IEnumerator CheckServerConnection(Action<bool> callback)
-    {
-        if (string.IsNullOrEmpty(apiServerIP))
-        {
-            Debug.LogError("API Server IP not set!");
-            callback(false);
-            yield break;
-        }
-        
-        string testUrl = $"http://{apiServerIP}:{apiPort}/list_races";
-        UnityWebRequest request = UnityWebRequest.Get(testUrl);
-        
-        yield return request.SendWebRequest();
-        
-        bool isConnected = request.result == UnityWebRequest.Result.Success;
-        Debug.Log($"API server connection test: {(isConnected ? "Success" : "Failed")}");
-        
-        callback(isConnected);
-    }
+}
+
+// Helper class for deserializing the race creator information
+[Serializable]
+public class RaceCreatorResponse
+{
+    public string race_id;
+    public int race_creator;
+    public int udp_port;
+    public int ws_port;
+    public string status;
 }

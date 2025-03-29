@@ -203,7 +203,7 @@ public class DroneMover : MonoBehaviour
         
         if (numMotors != 4)
         {
-            Debug.LogError("Number of motors is not 4");
+            // Debug.LogError("Number of motors is not 4");
             // Front two propellers
             propeller1.transform.Rotate(0, 0, 1200 * Time.deltaTime);
             propeller2.transform.Rotate(0, 0, 1200 * Time.deltaTime);

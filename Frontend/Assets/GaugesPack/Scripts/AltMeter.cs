@@ -49,7 +49,7 @@ public class AltMeter : MonoBehaviour {
         }
         if (currentDrone != null) {
             AltMValue = currentDrone.getPosition().y * altitudeScale;
-            Debug.Log(AltMValue);
+            // Debug.Log(AltMValue);
         }
         
         k = Mathf.Clamp(k, 0.5f, 2f);
