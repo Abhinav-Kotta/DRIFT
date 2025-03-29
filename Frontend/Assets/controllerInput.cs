@@ -83,10 +83,12 @@ public class ControllerInput : MonoBehaviour
             if (primary != null)
             {
                 if (primary.isPressed && !leftPrimaryPressedLast)
-                    Debug.Log("Left X Button Just Pressed");
-
+                {
+                    Debug.Log("Left X Button Just Pressed - > Cycle Camera");
+                    droneViewCam.cycleMode();
+                }
                 leftPrimaryPressedLast = primary.isPressed;
-                droneViewCam.cycleMode();
+            
             }
 
             if (secondary != null)

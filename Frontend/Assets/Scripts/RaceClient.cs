@@ -114,8 +114,9 @@ public class RaceClient : MonoBehaviour
             string udpPort = PlayerPrefs.GetString("udpPort");
             string raceID = PlayerPrefs.GetString("raceID");
             string status = PlayerPrefs.GetString("status");
-
-            raceUdp = udpPort.ToString();
+    
+            //Testing recomment later
+            //raceUdp = udpPort.ToString();
 
             Debug.Log($"[RaceClient] Loaded Race Data:");
             Debug.Log($"  - UDP Port: {udpPort}");
@@ -286,9 +287,10 @@ public class RaceClient : MonoBehaviour
 
     async Task ConnectToRaceWebSocket(string raceId)
     {
+        Debug.Log($"THIS IS THE FUCKING RACE UDPPPPPP {raceUdp}");
         try
         {
-            string wsUrl = $"ws://35.185.81.190:8765/race/38503";
+            string wsUrl = $"ws://35.185.81.190:8765/race/{raceUdp}";
             Debug.Log($"[WS] Connecting to WebSocket at: {wsUrl}");
             Debug.Log($"[WS] Race info:");
             Debug.Log($"    - Race ID: {currentRace.race_id}");
@@ -327,7 +329,7 @@ public class RaceClient : MonoBehaviour
                     // Debug.Log($"[WS] Decoded message: {message}");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
-                    // Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                    Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
                     if (DataManager.Instance == null)
