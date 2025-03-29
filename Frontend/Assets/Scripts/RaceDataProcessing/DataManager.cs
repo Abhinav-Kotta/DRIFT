@@ -69,12 +69,6 @@ public class DataManager : MonoBehaviour
                 {
                     Debug.LogWarning("No listeners subscribed to onDroneAdded event!");
                 }
-                if(activeDroneMovers.Count == 0)
-                {
-                    Debug.Log("setting the selected drone: ");
-                    selectedDrone = drone;
-                    Debug.Log("Drone has been set");
-                }
                 activeDroneMovers.Add(drone);
                 //testing
                 selectedDrone = activeDroneMovers[0];
@@ -90,7 +84,7 @@ public class DataManager : MonoBehaviour
 
         if (drone != null)
         {
-            // Debug.Log("droneId recognized");
+            Debug.Log("droneId recognized");
             drone.SetDroneData(droneData);
         }
     }
@@ -104,7 +98,7 @@ public class DataManager : MonoBehaviour
     {
         if (droneIdToGameObjectMap.TryGetValue(droneId, out DroneMover drone))
         {
-            Debug.Log("drone set: ", drone);
+            Debug.Log($"Selected drone ID: {droneId}");
             selectedDrone = drone;
         }
     }
