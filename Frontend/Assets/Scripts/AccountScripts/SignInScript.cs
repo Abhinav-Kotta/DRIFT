@@ -144,7 +144,7 @@ public class SignInScript : MonoBehaviour
                             Debug.Log("User info set in UserManager");
                             
                             // Navigate to main screen or home page
-                            SceneManager.LoadScene("Scenes/SampleScene");
+                            SceneManager.LoadScene("StartingScene"); 
                         }
                         else
                         {
