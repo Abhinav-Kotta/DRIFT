@@ -390,8 +390,13 @@ async def end_race(race_id: str):
     # Step 4: Close WebSocket connections for the race
     if udp_port in race_server.race_clients:
         try:
-            for client in race_server.race_clients[udp_port]:
-                await client.close()
+            # Create a copy of the set to iterate over
+            clients_to_close = list(race_server.race_clients[udp_port])
+            for client in clients_to_close:
+                try:
+                    await client.close()
+                except Exception as client_e:
+                    print(f"[ERROR] Failed to close individual WebSocket connection: {client_e}")
             del race_server.race_clients[udp_port]
             print(f"[DEBUG] Disconnected WebSocket clients for race {race_id} on port {udp_port}")
         except Exception as e:
