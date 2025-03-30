@@ -108,7 +108,7 @@ public class DroneViewCam : MonoBehaviour
     private void noClip()
     {
         // Debug log to make sure we are in no-clip mode
-        Debug.Log("No Clip Mode");
+        //Debug.Log("No Clip Mode");
 
         // Ensure the ControllerInput instance exists
         if (ControllerInput.Instance == null)
@@ -128,8 +128,8 @@ public class DroneViewCam : MonoBehaviour
         Vector2 leftStick = ControllerInput.Instance.LeftStickInput;  // Movement input
         Vector2 rightStick = ControllerInput.Instance.RightStickInput; // Rotation input
 
-        Debug.Log("Left Stick Input in mover: " + leftStick);
-        Debug.Log("Right Stick Input in mover: " + rightStick);
+ //       Debug.Log("Left Stick Input in mover: " + leftStick);
+//        Debug.Log("Right Stick Input in mover: " + rightStick);
 
         // Use the camera's forward and right vectors for movement, ignoring the Y component
         Vector3 forward = cam.transform.forward;
