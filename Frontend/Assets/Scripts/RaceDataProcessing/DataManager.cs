@@ -70,6 +70,8 @@ public class DataManager : MonoBehaviour
                     Debug.LogWarning("No listeners subscribed to onDroneAdded event!");
                 }
                 activeDroneMovers.Add(drone);
+                //testing
+                selectedDrone = activeDroneMovers[0];
                 onDroneAdded?.Invoke(drone);
                 droneIdToGameObjectMap.Add(droneId, drone);
             }
@@ -129,5 +131,36 @@ public class DataManager : MonoBehaviour
     public int GetNumActiveDrones()
     {
         return activeDroneMovers.Count;
+    } 
+    public List<DroneMover> GetLeaderBoard()
+    {
+        //Will be a list of active drone movers sorted by race position
+        List<DroneMover> placeSortedDrones = unmappedDroneMovers;// Testing put back after done activeDroneMovers;
+        
+        placeSortedDrones.Sort((p,q) => p.getPlacement().CompareTo(q.getPlacement()));
+
+        //Test prining remove later
+        //Input LeaderBoard Update Here
+        
+        for(int i = placeSortedDrones.Count; i > 0; i--)
+            Debug.Log(placeSortedDrones[i - 1].Name + " in position: " + (placeSortedDrones.Count + 1 - (i)));
+        return placeSortedDrones;
+    }
+
+    public string GetLeaderBoardString()
+    {
+        // Will be a list of active drone movers sorted by race position
+        List<DroneMover> placeSortedDrones = unmappedDroneMovers; // Testing put back after done activeDroneMovers;
+
+        placeSortedDrones.Sort((p, q) => p.getPlacement().CompareTo(q.getPlacement()));
+
+        // Generate the leaderboard string
+        string leaderboardString = "";
+        for (int i = placeSortedDrones.Count; i > 0; i--)
+        {
+            leaderboardString += $"{placeSortedDrones[i - 1].Name} in position {placeSortedDrones.Count + 1 - i}\n";
+        }
+
+        return leaderboardString;
     }
 }
