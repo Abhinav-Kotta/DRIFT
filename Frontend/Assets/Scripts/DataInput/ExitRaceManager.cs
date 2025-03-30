@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System;
+using UnityEngine.SceneManagement;
 
 public class ExitRaceButton : MonoBehaviour
 {
@@ -156,9 +157,10 @@ public class ExitRaceButton : MonoBehaviour
             else
             {
                 Debug.Log($"Race ended successfully: {www.downloadHandler.text}");
+                exitRaceButton.interactable = false;
                 
                 // Handle race end - maybe return to menu or lobby scene
-                // Example: SceneManager.LoadScene("MenuScene");
+                SceneManager.LoadScene("StartingScene");
             }
         }
     }
