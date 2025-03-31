@@ -129,7 +129,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7667149206985812879}
-  - component: {fileID: 1992559390926903298}
   - component: {fileID: 5861888306784257836}
   - component: {fileID: 5917529334733900506}
   - component: {fileID: 4999680434383326330}
@@ -160,14 +159,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &1992559390926903298
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5445211578602789656}
-  m_CullTransparentMesh: 1
 --- !u!114 &5861888306784257836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,3 +311,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spectateButton: {fileID: 0}
+  drone: {fileID: 0}

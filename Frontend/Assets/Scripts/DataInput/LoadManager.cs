@@ -5,7 +5,19 @@ public class LoadManager : MonoBehaviour
 {
     public void LoadMenu()
     {
-        Debug.Log("Button pressed - loading SampleScene");
+        Debug.Log("Loading Starting Scene...");
         SceneManager.LoadScene("StartingScene");
+    }
+
+    public void SignUp()
+    {
+        Debug.Log("Loading SignUp Scene...");
+        SceneManager.LoadScene("SignUp");
+    }
+
+    public void ForgotPassword()
+    {
+        Debug.Log("Loading Forgot Password Scene...");
+        SceneManager.LoadScene("ForgotPW");
     }
 }

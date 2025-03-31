@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class CreateAccountScript : MonoBehaviour
 {
@@ -62,6 +63,7 @@ public class CreateAccountScript : MonoBehaviour
         {
             string result = www.downloadHandler.text;
             Debug.Log(result);
+            SceneManager.LoadScene("StartingScene");
         }
     }
 }

@@ -116,7 +116,7 @@ class RaceServer:
         print(f'UDP Server listening on port {udp_port}')
 
         firstPacket = True
-        while True:
+        while udp_port in self.udp_servers:
             try:
                 data, addr = udp_server.recvfrom(4096)
                 if len(data) >= 81:
