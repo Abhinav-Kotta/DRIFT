@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using Unity.Android.Gradle.Manifest;
+// using Unity.Android.Gradle.Manifest;
 
 public class CreateRaceScript : MonoBehaviour
 {

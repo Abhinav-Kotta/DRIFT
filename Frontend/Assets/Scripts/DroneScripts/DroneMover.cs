@@ -116,21 +116,8 @@ public class DroneMover : MonoBehaviour
     // }
     public float CalculateVelocityMagnitude()
     {
-        timeSinceLastUpdate += Time.deltaTime;
-        
-        if (timeSinceLastUpdate >= velocityUpdateInterval)
-        {
-            currentPosition = transform.position;
-            
-            Vector3 displacement = currentPosition - lastPosition;
-            
-            calculatedSpeed = displacement.magnitude / timeSinceLastUpdate;
-            
-            lastPosition = currentPosition;
-            timeSinceLastUpdate = 0f;
-        }
-        
-        return calculatedSpeed;
+        float speed = velocity.magnitude;
+        return speed;
     }
 
     public float GetCalculatedSpeed()
@@ -164,6 +151,7 @@ public class DroneMover : MonoBehaviour
         setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
         setProps(droneData.motor_rpms); //needs testing. Should work. may throw type exception if anything. edit function decl below.
         this.velocity = new Vector3(droneData.velocity.x, droneData.velocity.y, droneData.velocity.z);
+        Debug.Log($"velocity: {this.velocity}");
         this.gyroPitch = droneData.gyro.pitch;
         this.gyroRoll = droneData.gyro.roll;
         this.gyroYaw = droneData.gyro.yaw;

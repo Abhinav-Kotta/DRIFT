@@ -37,10 +37,10 @@ public class FuelMeter : MonoBehaviour {
         
         currentDrone = dataManager.GetSelectedDrone();
         if (currentDrone != null) {
-            batteryPercentage = currentDrone.BatteryPercentage;
+            batteryPercentage = currentDrone.BatteryPercentage * 100;
             batteryVoltage = currentDrone.BatteryVoltage;
-            // Debug.Log($"Battery percentage: {batteryPercentage}%");
-            // Debug.Log($"Battery voltage: {batteryVoltage}V");
+            Debug.Log($"Battery percentage: {batteryPercentage}%");
+            Debug.Log($"Battery voltage: {batteryVoltage}V");
         }
         
         k = Mathf.Clamp(k, 0.5f, 2f);
@@ -85,10 +85,8 @@ public class FuelMeter : MonoBehaviour {
         GUI.Label(new Rect(128 - 64 * k + 2.5f, 128 - 64 * k,
             128 * k, 128 * k), BatteryMeterTexture);
             
-        // Rotate the arrow based on battery percentage (0-100%)
-        // Map 0-100% to the same range as the original fuel meter (-3.6 to 3.6 = 7.2 total range)
         float arrowRotation = (batteryPercentage / 100f * 7.2f) - 3.6f;
-        arrowRotation *= 36f; // Convert to degrees like in the original
+        arrowRotation *= 36f;
             
         // Arrow rotation
         Matrix4x4 mtrxBM = GUI.matrix;
