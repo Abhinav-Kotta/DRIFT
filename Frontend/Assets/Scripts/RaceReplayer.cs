@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 [System.Serializable]
 public class RootResponse
@@ -51,6 +52,14 @@ public class RaceReplayer : MonoBehaviour
     private string baseApiUrl;
     public string raceID;
 
+    
+
+    void Start()
+    {
+        Debug.Log("Replay data loading....");
+        StartCoroutine(LoadReplayData(raceID));
+    }
+
     void PrintDroneData(DroneData data)
     {
         Debug.Log($"\n--- Drone Packet ---\n" +
@@ -64,12 +73,6 @@ public class RaceReplayer : MonoBehaviour
             $"Battery: percentage={data.battery.percentage}, voltage={data.battery.voltage}\n" +
             $"Motor Count: {data.motor_count}\n" +
             $"Motor RPMs: {(data.motor_rpms != null ? string.Join(", ", data.motor_rpms) : "null")}\n");
-    }
-
-    void Start()
-    {
-        Debug.Log("Replay data loading....");
-        StartCoroutine(LoadReplayData(raceID));
     }
 
     IEnumerator LoadReplayData(string raceID)
@@ -87,20 +90,18 @@ public class RaceReplayer : MonoBehaviour
         {
             string jsonData = request.downloadHandler.text;
             RootResponse root = JsonUtility.FromJson<RootResponse>(jsonData);
-
-            // Parse string[] from flight_packet (it's a JSON array of escaped strings)
             string fixedRaw = JsonHelper.FixJsonArray(root.race.flight_packet);
             string[] rawPackets = JsonHelper.FromJson<string>(fixedRaw);
 
-            DroneData[] packets = new DroneData[rawPackets.Length];
+            DroneData[] processedPackets = new DroneData[rawPackets.Length];
             for (int i = 0; i < rawPackets.Length; i++)
             {
-                string cleanJson = rawPackets[i]
-                    .Replace("\\n", "")
-                    .Replace("\\\"", "\"")
-                    .Trim();
+                string raw = rawPackets[i].Replace("\\n", "").Replace("\\\"", "\"").Trim();
 
-                packets[i] = JsonUtility.FromJson<DroneData>(cleanJson);
+                // Replace drone_id array with "ip:port" string
+                raw = Regex.Replace(raw, "\"drone_id\":\\s*\\[\\s*\"(.*?)\"\\s*,\\s*(\\d+)\\s*\\]", "\"drone_id\": \"$1:$2\"");
+
+                processedPackets[i] = JsonUtility.FromJson<DroneData>(raw);
             }
 
             RaceReplayResponse replayData = new RaceReplayResponse
@@ -108,17 +109,33 @@ public class RaceReplayer : MonoBehaviour
                 raceID = root.race.race_id,
                 raceName = root.race.race_name,
                 driftMap = root.race.drift_map,
-                packets = packets
+                packets = processedPackets
             };
 
             Debug.Log("Race name: " + replayData.raceName);
             Debug.Log("Packets count: " + replayData.packets.Length);
 
-            for (int i = 0; i < replayData.packets.Length; i++)
+            if (DataManager.Instance == null)
             {
-                PrintDroneData(replayData.packets[i]);
-                yield return new WaitForSecondsRealtime(0.05f);
+                Debug.LogError("DataManager.Instance is still null at this point in time!");
             }
+
+            Debug.Log("balls");
+
+            StartCoroutine(PlayReplay(replayData.packets));
         }
     }
+
+    IEnumerator PlayReplay(DroneData[] packets)
+    {
+        foreach (DroneData packet in packets)
+        {
+            if (DataManager.Instance != null)
+            {
+                DataManager.Instance.UpdateDroneData(packet);
+            }
+            yield return new WaitForSecondsRealtime(0.02f); // ~50 FPS
+        }
+    }
+
 }
