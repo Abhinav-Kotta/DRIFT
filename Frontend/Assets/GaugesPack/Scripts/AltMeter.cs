@@ -20,8 +20,8 @@ public class AltMeter : MonoBehaviour {
     
     private DroneViewCam cameraController;
     [SerializeField] private bool showInFirstPersonOnly = true;
-    [SerializeField] private KeyCode toggleKey = KeyCode.G;
-    private bool showGauge = true;
+    // [SerializeField] private KeyCode toggleKey = KeyCode.G;
+    // private bool showGauge = true;
 
     void Start() {
         // Get references to your data management system
@@ -36,11 +36,11 @@ public class AltMeter : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKeyDown(toggleKey)) {
-            showGauge = !showGauge;
-        }
+        // if (Input.GetKeyDown(toggleKey)) {
+        //     showGauge = !showGauge;
+        // }
         
-        if (!ShouldShowGauge()) return;
+        // if (!ShouldShowGauge()) return;
         
         currentDrone = dataManager.GetSelectedDrone();
         if (currentDrone == null) {
@@ -81,19 +81,19 @@ public class AltMeter : MonoBehaviour {
         }
     }
     
-    private bool ShouldShowGauge() {
-        if (!showGauge) return false;
+    // private bool ShouldShowGauge() {
+    //     if (!showGauge) return false;
         
-        if (showInFirstPersonOnly && cameraController != null) {
-            int mode = cameraController.GetCurrentMode();
-            return mode == 0; // First-person mode
-        }
+    //     if (showInFirstPersonOnly && cameraController != null) {
+    //         int mode = cameraController.GetCurrentMode();
+    //         return mode == 0; // First-person mode
+    //     }
         
-        return true;
-    }
+    //     return true;
+    // }
     
     void OnGUI() {
-        if (!ShouldShowGauge()) return;
+        // if (!ShouldShowGauge()) return;
         
         if (AMFondTex == null || AltMeterTexture == null) return;
         

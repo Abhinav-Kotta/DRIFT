@@ -11,8 +11,7 @@ public class DroneMover : MonoBehaviour
     private Vector3 currentPosition;
     private float timeSinceLastUpdate = 0f;
     private float velocityUpdateInterval = 0.1f;
-    private float calculatedSpeed = 0f;
-    
+    private float calculatedSpeed = 0f;    
     private int numGates; 
 
     // Can be used for testing for movement and rotation
