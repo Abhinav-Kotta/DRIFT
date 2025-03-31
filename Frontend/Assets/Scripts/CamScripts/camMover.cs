@@ -10,8 +10,6 @@ public class DroneViewCam : MonoBehaviour
     [SerializeField] private float rotationSpeed = 8.0f;
     [SerializeField] private Camera cam; // Reference to the XR camera
 
-    //array of drones. Assignment of which stream goes to which drone yet to be determined
-    //TO DO: Get Drone List from data manager
     public GameObject[] drones;
 
     //singleton of drone. used for viewing one particular drone in the scene
@@ -23,6 +21,11 @@ public class DroneViewCam : MonoBehaviour
     public int numberOfDrones;
 
     
+    //DashBoard Toggles
+    public GameObject gauges;
+    public GameObject LeftStickView;
+    public GameObject RightStickView;
+    public Canvas popupPanel;
 
 
     private float followX;
@@ -64,18 +67,7 @@ public class DroneViewCam : MonoBehaviour
         else{
             drone = dataManager.GetSelectedDrone();
         }
-        //drone = dataManager.GetSelectedDrone();
-        //Debug.Log("Mode num: " + mode + " Drone: " + dataManager.selectedDroneIndex);
-       
-        // if(Input.GetKeyDown(KeyCode.Tab))
-        // {
-        //     drone = drones[(Array.IndexOf(drones, drone) + 1) % numberOfDrones];
-        // }
-        // if(Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     mode++;
-        //     mode = mode % 3;
-        // }
+
         switch(mode)
         {
             case 0:
@@ -94,6 +86,14 @@ public class DroneViewCam : MonoBehaviour
     
     private void firstPerson()
     {
+        //Set Gauges and stick to be active in first person mode
+        if(gauges != null)
+            gauges.SetActive(true); // Turn off the gauges in no-clip mode
+        if(LeftStickView != null && RightStickView != null)
+        {
+            LeftStickView.SetActive(true); // Turn off the left stick view in no-clip mode
+            RightStickView.SetActive(true); // Turn off the right stick view in no-clip mode
+        }
         drone = dataManager.GetSelectedDrone();
         // Follow the drone's position
         followX = drone.transform.position.x;
@@ -116,8 +116,14 @@ public class DroneViewCam : MonoBehaviour
     //Needs refactoring. This is a mess
     private void noClip()
     {
-        // Debug log to make sure we are in no-clip mode
-        //Debug.Log("No Clip Mode");
+        //Set gauges and stick to be inactive in no-clip mode
+        if(gauges != null)
+            gauges.SetActive(false); // Turn off the gauges in no-clip mode
+        if(LeftStickView != null && RightStickView != null)
+        {
+            LeftStickView.SetActive(false); // Turn off the left stick view in no-clip mode
+            RightStickView.SetActive(false); // Turn off the right stick view in no-clip mode
+        }
 
         // Ensure the ControllerInput instance exists
         if (ControllerInput.Instance == null)
@@ -137,8 +143,6 @@ public class DroneViewCam : MonoBehaviour
         Vector2 leftStick = ControllerInput.Instance.LeftStickInput;  // Movement input
         Vector2 rightStick = ControllerInput.Instance.RightStickInput; // Rotation input
 
-        //Debug.Log("Left Stick Input in mover: " + leftStick);
-        //Debug.Log("Right Stick Input in mover: " + rightStick);
 
         // Use the camera's forward and right vectors for movement, ignoring the Y component
         Vector3 forward = cam.transform.forward;
@@ -160,6 +164,14 @@ public class DroneViewCam : MonoBehaviour
     }
     private void thirdPerson()
     {
+        //Set Gauges and stick to be active in third person mode
+        if(gauges != null)
+            gauges.SetActive(true); // Turn off the gauges in no-clip mode
+        if(LeftStickView != null && RightStickView != null)
+        {
+            LeftStickView.SetActive(true); // Turn off the left stick view in no-clip mode
+            RightStickView.SetActive(true); // Turn off the right stick view in no-clip mode
+        }
         // Define the offset behind the drone
         Vector3 offset = new Vector3(0, offsetY, offsetZ);
 

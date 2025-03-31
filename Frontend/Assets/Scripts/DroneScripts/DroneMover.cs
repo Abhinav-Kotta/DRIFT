@@ -99,7 +99,7 @@ public class DroneMover : MonoBehaviour
         if(artificialMovement)
             SimulateMovement();
         //Comment out for testing
-        //transform.position = getPosition();
+        transform.position = getPosition();
         //transform.rotation = getRotation();
     }
 

@@ -93,44 +93,18 @@ public class StatManager : MonoBehaviour
             DroneMover selectedDrone = DataManager.Instance.GetSelectedDrone();
             if (selectedDrone != null)
             {
-                // Update the text with the selected drone's data
-                // Debug.Log("updating text");
-                textBox.text = UpdateText(selectedDrone);
-            }
-
-            if (showStickInput && stickCircleTY != null && stickCirclePR != null)
-            {
-                UpdateStickInput();
+                if (showStickInput && stickCircleTY != null && stickCirclePR != null)
+                {
+                    // Update stick input visualization
+                    yawInput = selectedDrone.YawInput;
+                    throttleInput = selectedDrone.ThrottleInput;
+                    rollInput = selectedDrone.RollInput * -1f; // Invert roll input for correct visualization
+                    pitchInput = selectedDrone.PitchInput;
+                    UpdateStickInput();
+                }
             }
     }
 
-    private string UpdateText(DroneMover drone)
-    {
-        string text = "";
-        text += "Drone Id: " + drone.DID + "\n";
-        if (!showStats)
-        {
-            return text;
-        }
-
-        if (showVelocity)
-        {
-            text += " Velocity: " + drone.Velocity + "\n";
-        }
-        if (showPitch)
-        {
-            text += "     Pitch: " + drone.Pitch + "\n";
-        }
-        if (showRoll)
-        {
-            text += "       Roll: " + drone.Roll + "\n";
-        }
-        if (showYaw)
-        {
-            text += "       Yaw: " + drone.Yaw + "\n";
-        }
-        return text;
-    }
 
     private void UpdateStickInput()
     {

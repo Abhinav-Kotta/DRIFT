@@ -44,7 +44,7 @@ public class AltMeter : MonoBehaviour {
         
         currentDrone = dataManager.GetSelectedDrone();
         if (currentDrone == null) {
-            Debug.LogError("No drone selected or data manager not initialized.");
+            Debug.Log("No drone selected or data manager not initialized.");
             return;
         }
         if (currentDrone != null) {

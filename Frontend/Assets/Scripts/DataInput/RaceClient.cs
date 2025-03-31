@@ -116,7 +116,7 @@ public class RaceClient : MonoBehaviour
             string status = PlayerPrefs.GetString("status");
     
             //Testing recomment later
-            //raceUdp = udpPort.ToString();
+            raceUdp = udpPort.ToString();
 
             Debug.Log($"[RaceClient] Loaded Race Data:");
             Debug.Log($"  - UDP Port: {udpPort}");
