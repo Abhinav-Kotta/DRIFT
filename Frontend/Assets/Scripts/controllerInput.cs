@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.SceneManagement;
 
 public class ControllerInput : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class ControllerInput : MonoBehaviour
     bool leftPrimaryPressedLast = false;
     bool leftSecondaryPressedLast = false;
     bool leftOptionPressedLast = false;
+    bool leftGripPressedLast = false;
+    bool leftTriggerPressedLast = false; // Track the last state of the left trigger button
 
     DataManager dataManager = null;
     DroneViewCam droneViewCam = null;
@@ -82,6 +85,8 @@ public class ControllerInput : MonoBehaviour
             var primary = leftHand["primaryButton"] as ButtonControl;
             var secondary = leftHand["secondaryButton"] as ButtonControl;
             var option = leftHand["menuButton"] as ButtonControl; // Add the menu/option button
+            var grip = leftHand["gripButton"] as ButtonControl; // Add the grip button
+            var trigger = leftHand["triggerButton"] as ButtonControl; // Add the trigger button
 
             if (primary != null)
             {
@@ -104,6 +109,17 @@ public class ControllerInput : MonoBehaviour
             // Add debug print for the left option/menu button
             if (option != null)
             {
+                // check if optionis pressed and grip is pressed after
+                if (grip != null && grip.isPressed && !leftGripPressedLast)
+                {
+                    Debug.Log("Left Grip Button Just Pressed -> Exit Race");
+                    SceneManager.LoadScene("Import");
+                }
+                if (trigger != null && trigger.isPressed && !leftTriggerPressedLast)
+                {
+                    Debug.Log("Left Trigger Button Just Pressed -> End Race");
+                    SceneManager.LoadScene("StartingScene");
+                }
                 if (option.isPressed && !leftOptionPressedLast)
                 {
                     Debug.Log("Left Option/Menu Button Just Pressed");
