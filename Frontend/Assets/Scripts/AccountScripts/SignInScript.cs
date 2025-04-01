@@ -87,38 +87,15 @@ public class SignInScript : MonoBehaviour
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
             
-            // Add timeout (5 seconds)
             www.timeout = 5;
             
-            // Send request
             yield return www.SendWebRequest();
 
-            // Re-enable button after response received
             signInButton.interactable = true;
             
-            // Process response
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Login error: {www.error}");
-                Debug.LogError($"Response code: {www.responseCode}");
-                Debug.LogError($"Response: {www.downloadHandler.text}");
-                
-                // Provide more specific error messages based on the error type
-                if (www.error.Contains("111") || www.error.Contains("Connect call failed"))
-                {
-                    if (errorText != null)
-                        errorText.text = "Cannot connect to server. Please check your internet connection.";
-                }
-                else if (www.responseCode == 401)
-                {
-                    if (errorText != null)
-                        errorText.text = "Invalid username or password.";
-                }
-                else
-                {
-                    if (errorText != null)
-                        errorText.text = $"Login failed. Please try again.";
-                }
+                SceneManager.LoadScene("SignIn");
             }
             else
             {
