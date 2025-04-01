@@ -341,10 +341,14 @@ async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
         race_json = json.dumps(race_data)
         race_size_bytes = sys.getsizeof(race_json)
 
+        user_ids_set = race_server.get_user_race()[race_id]
+        user_ids = [str(user_id) for user_id in user_ids_set]
+        user_ids_json = json.dumps(user_ids)
+
         # Save the race data to the database
         await db.execute(
             "INSERT INTO races (race_id, race_name, drift_map, user_id, flight_packet, race_size_bytes) VALUES ($1, $2, $3, $4, $5, $6)",
-            race_id, input.race_name, input.drift_map, list(input.race_server.get_user_race()[race_id]), race_json, race_size_bytes
+            race_id, input.race_name, input.drift_map, user_ids_json, race_json, race_size_bytes
         )
 
         # Clear only this race's cache
