@@ -84,7 +84,7 @@ public class DataManager : MonoBehaviour
 
         if (drone != null)
         {
-            Debug.Log("droneId recognized");
+            //Debug.Log("droneId recognized");
             drone.SetDroneData(droneData);
         }
     }

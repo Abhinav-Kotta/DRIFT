@@ -95,6 +95,11 @@ public class DroneViewCam : MonoBehaviour
             RightStickView.SetActive(true); // Turn off the right stick view in no-clip mode
         }
         drone = dataManager.GetSelectedDrone();
+        if (drone == null)
+        {
+            Debug.LogWarning("No drone selected.");
+            return;
+        }
         // Follow the drone's position
         followX = drone.transform.position.x;
         followY = drone.transform.position.y;
@@ -175,6 +180,11 @@ public class DroneViewCam : MonoBehaviour
         // Define the offset behind the drone
         Vector3 offset = new Vector3(0, offsetY, offsetZ);
 
+        if (drone == null)
+        {
+            Debug.LogWarning("No drone selected.");
+            return;
+        }
         // Calculate the camera's position relative to the drone
         Vector3 desiredPosition = drone.transform.position + drone.transform.rotation * offset;
 

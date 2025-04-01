@@ -150,7 +150,7 @@ public class DroneMover : MonoBehaviour
         setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
         setProps(droneData.motor_rpms); //needs testing. Should work. may throw type exception if anything. edit function decl below.
         this.velocity = new Vector3(droneData.velocity.x, droneData.velocity.y, droneData.velocity.z);
-        Debug.Log($"velocity: {this.velocity}");
+        //Debug.Log($"velocity: {this.velocity}");
         this.gyroPitch = droneData.gyro.pitch;
         this.gyroRoll = droneData.gyro.roll;
         this.gyroYaw = droneData.gyro.yaw;
@@ -294,7 +294,7 @@ public class DroneMover : MonoBehaviour
     public void PassGate()
     {
         numGates++;
-        //Debug.Log("Passed gate: " + numGates);
+        Debug.Log("Passed gate: " + numGates);
         DataManager.Instance.GetLeaderBoard();
     }
     public int getPlacement()
