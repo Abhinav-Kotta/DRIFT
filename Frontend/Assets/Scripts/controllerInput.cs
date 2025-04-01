@@ -3,12 +3,15 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ControllerInput : MonoBehaviour
 {
     public static ControllerInput Instance { get; private set; } // Singleton instance
 
     private bool canEnd;
+
+    private Button endRaceButton;
 
     bool rightPrimaryPressedLast = false;
     bool rightSecondaryPressedLast = false;
@@ -48,6 +51,7 @@ public class ControllerInput : MonoBehaviour
             return;
         }
         dataManager = DataManager.Instance;
+        endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
     }
 
     void Update()
@@ -122,12 +126,15 @@ public class ControllerInput : MonoBehaviour
 
                     Debug.Log("Left Trigger Button Just Pressed -> End Race");
                     if(canEnd)
+                    {
+                        endRaceButton.onClick.Invoke();
                         SceneManager.LoadScene("StartingScene");
+                    }
                 }
                 if (option.isPressed && !leftOptionPressedLast)
                 {
                     Debug.Log("Left Option/Menu Button Just Pressed");
-                    canEnd != canEnd;
+                    canEnd = !canEnd;
                     droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
                 }                
                 leftOptionPressedLast = option.isPressed;

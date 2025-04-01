@@ -336,6 +336,22 @@ PrefabInstance:
       propertyPath: m_TargetGraphic
       value: 
       objectReference: {fileID: 560116281}
+    - target: {fileID: 4709943987178060195, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4709943987178060195, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4709943987178060195, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 560116283}
+    - target: {fileID: 4709943987178060195, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5723682313206742080, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
       propertyPath: m_Name
       value: EndRace
@@ -1813,6 +1829,17 @@ MonoBehaviour:
   m_ClampToMaxDistance: 0
   m_MaxDistance: 1000
   m_PokeFilter: {fileID: 0}
+--- !u!114 &560116283 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7129616283767816915, guid: 0030e9157f2a4c04d9c699ab242130f0, type: 3}
+  m_PrefabInstance: {fileID: 89665067}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 89665069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5276dd3a83d99405f9fa7dfae8933b69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &582413316
 GameObject:
   m_ObjectHideFlags: 0
