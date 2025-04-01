@@ -44,24 +44,21 @@ public class FuelMeterVRScript : MonoBehaviour
 
         // Update altitude value
         battery = currentDrone.BatteryPercentage;
-        Debug.Log($"battery percentage: {battery}");
 
         // Move the pointer based on AltMValue
         if (pointer.targetObject != null)
         {
-            float normalizedBattery = battery;
-            //if (battery > 1f) {
-            normalizedBattery = battery / 100f;
-            //}
+            // float normalizedBattery = battery * 100;
+            Debug.Log($"battery percentage: {battery}");
             
-            float clamped = Mathf.Clamp(normalizedBattery, 0f, 1f);
+            float clamped = Mathf.Clamp(battery, 0f, 1f);
             
             // 100% 235
             // float angle = Mathf.Lerp(0f, 235f, clamped);
 
             // 50% 0, 45% 45, 10% 200, 0% 240
-            float angle = (Mathf.Lerp(0f, 245f, normalizedBattery) - 128) * -1;
-            print($"angle: {angle}, {clamped}");
+            float angle = (Mathf.Lerp(0f, 245f, battery) - 128) * -1;
+            // print($"angle: {angle}, {clamped}");
     
             // if (clamped <= 0.2f) {
             //     angle = Mathf.Lerp(-180f, -270f, clamped / 0.2f);
