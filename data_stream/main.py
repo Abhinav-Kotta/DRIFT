@@ -5,7 +5,7 @@ import asyncpg
 from pydantic import BaseModel
 from typing import Dict, List
 import uuid
-from ws import race_server, users_in_race
+from ws import race_server
 from dotenv import load_dotenv
 import os
 import bcrypt
@@ -300,8 +300,8 @@ async def create_race(user_id: int) -> Dict[str, RaceResponse]:
             ws_port=WS_PORT,
             status="started"
         )
-        users_in_race[race_id] = set()
-        users_in_race[race_id].add(user_id)
+        race_server.get_user_race()[race_id] = set()
+        race_server.get_user_race()[race_id].add(user_id)
         active_races[race_id] = race_response
         return {race_id: race_response}
     except Exception as e:
@@ -314,7 +314,7 @@ async def watch_race(race_id: str, user_id: int) -> RaceResponse:
         raise HTTPException(status_code=404, detail="Race not found")
 
     if user_id != -1:
-        users_in_race[race_id].add(user_id)
+        race_server.get_user_race()[race_id].add(user_id)
         
     return active_races[race_id]
 
@@ -344,7 +344,7 @@ async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
         # Save the race data to the database
         await db.execute(
             "INSERT INTO races (race_id, race_name, drift_map, user_id, flight_packet, race_size_bytes) VALUES ($1, $2, $3, $4, $5, $6)",
-            race_id, input.race_name, input.drift_map, list(input.users_in_race[race_id]), race_json, race_size_bytes
+            race_id, input.race_name, input.drift_map, list(input.race_server.get_user_race()[race_id]), race_json, race_size_bytes
         )
 
         # Clear only this race's cache
@@ -413,10 +413,10 @@ async def end_race(race_id: str):
         del race_server.race_id_to_port[race_id]
         print(f"[DEBUG] Deleted race_id_to_port mapping for race {race_id}")
     
-    # Step 6: Remove race_id from users_in_race dict
-    if race_id in users_in_race.keys():
-        del users_in_race[race_id0]
-        print("[DEBUG] Deleted race_id from users_in_race table")
+    # Step 6: Remove race_id from race_server.get_user_race() dict
+    if race_id in race_server.get_user_race().keys():
+        del race_server.get_user_race()[race_id]
+        print("[DEBUG] Deleted race_id from race_server.get_user_race() table")
 
     return {"status": "success", "message": f"Race {race_id} ended successfully"}
 

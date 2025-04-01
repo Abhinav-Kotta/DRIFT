@@ -9,7 +9,7 @@ import signal
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from dataclasses import dataclass
-from typing import Dict, Set
+from typing import Dict, Set, List
 from pympler import asizeof # remove this bitch later
 import sys # remove this bitch later
 import time
@@ -42,6 +42,7 @@ def is_port_available(port: int) -> bool:
         except socket.error:
             return False
 
+
 class RaceServer:
     def __init__(self):
         self.race_clients: Dict[int, Set[websockets.WebSocketServerProtocol]] = {}
@@ -51,6 +52,9 @@ class RaceServer:
         self.race_caches: Dict[int, List[str]] = {}  # Separate cache per race
         self.users_in_race: Dict[int, Set[int]] = {} # dict of users that entered a race
         self.race_id_to_port: Dict[str, int] = {}  # Map race_id to UDP port
+
+    def get_user_race(self):
+        return self.users_in_race
 
     def map_race_id_to_port(self, race_id: str, udp_port: int):
         """Stores a mapping of race_id (UUID) to udp_port and initializes a queue"""
