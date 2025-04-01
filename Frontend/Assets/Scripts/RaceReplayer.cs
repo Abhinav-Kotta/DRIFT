@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text.RegularExpressions;
 using TMPro;
-
+using System.Collections.Generic;
 
 [System.Serializable]
 public class RootResponse
@@ -66,8 +66,7 @@ public class RaceReplayer : MonoBehaviour
     private bool isSliderBeingDragged = false;
     private bool wasPlayingBeforeDrag = false;
     public TMPro.TextMeshProUGUI timestampDisplay;
-
-
+    private bool replayFinished = false;
 
     public void OnSliderDragStart()
     {
@@ -140,7 +139,6 @@ public class RaceReplayer : MonoBehaviour
         if (isPaused && DataManager.Instance != null)
             DataManager.Instance.UpdateDroneData(replayPackets[currentIndex]);
 
-        // ⏱ Update the timestamp text right here
         if (timestampDisplay != null)
         {
             int curMin = Mathf.FloorToInt(currentPacketTime / 60f);
@@ -150,6 +148,12 @@ public class RaceReplayer : MonoBehaviour
             int totalSec = Mathf.FloorToInt(replayDuration % 60f);
 
             timestampDisplay.text = $"{curMin:D2}:{curSec:D2} / {totalMin:D2}:{totalSec:D2}";
+        }
+
+        if (!isPaused || replayFinished)
+        {
+            replayFinished = false;
+            replayCoroutine = StartCoroutine(PlayReplay());
         }
     }
 
@@ -190,6 +194,7 @@ public class RaceReplayer : MonoBehaviour
 
     IEnumerator LoadReplayData(string raceID)
     {
+        replayFinished = false;
         baseApiUrl = ConfigLoader.GetApiUrl();
         UnityWebRequest request = UnityWebRequest.Get(baseApiUrl + "/replay_race/" + raceID);
         yield return request.SendWebRequest();
@@ -215,6 +220,32 @@ public class RaceReplayer : MonoBehaviour
 
             Debug.Log("Race name: " + root.race.race_name);
             Debug.Log("Packets count: " + replayPackets.Length);
+
+            Dictionary<string, float> droneOffsets = new();
+            float runningMaxTime = 0f;
+
+            for (int i = 0; i < replayPackets.Length; i++)
+            {
+                var packet = replayPackets[i];
+
+                if (!droneOffsets.ContainsKey(packet.drone_id))
+                {
+                    // Offset this drone's timeline to match when it first appears
+                    droneOffsets[packet.drone_id] = runningMaxTime - packet.timestamp;
+                }
+
+                // Apply offset
+                packet.timestamp += droneOffsets[packet.drone_id];
+
+                // Update max seen timestamp so far
+                runningMaxTime = Mathf.Max(runningMaxTime, packet.timestamp);
+            }
+
+            for (int i = 0; i < replayPackets.Length; i++)
+            {
+                PrintDroneData(replayPackets[i]);
+            }
+
 
             if (DataManager.Instance == null)
             {
@@ -253,7 +284,6 @@ public class RaceReplayer : MonoBehaviour
                     replayStartTime += Time.unscaledDeltaTime;
                 }
 
-                // 🧠 Smooth slider update here
                 if (!isSliderBeingDragged && replaySlider != null)
                 {
                     float currentTime = Time.realtimeSinceStartup - replayStartTime + replayPackets[0].timestamp;
@@ -287,5 +317,7 @@ public class RaceReplayer : MonoBehaviour
 
             currentIndex++;
         }
+
+        replayFinished = true;
     }
 }
