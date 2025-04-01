@@ -11,6 +11,8 @@ public class ControllerInput : MonoBehaviour
     bool rightSecondaryPressedLast = false;
     bool leftPrimaryPressedLast = false;
     bool leftSecondaryPressedLast = false;
+    bool leftOptionPressedLast = false;
+
     DataManager dataManager = null;
     DroneViewCam droneViewCam = null;
 
@@ -79,6 +81,7 @@ public class ControllerInput : MonoBehaviour
         {
             var primary = leftHand["primaryButton"] as ButtonControl;
             var secondary = leftHand["secondaryButton"] as ButtonControl;
+            var option = leftHand["menuButton"] as ButtonControl; // Add the menu/option button
 
             if (primary != null)
             {
@@ -88,7 +91,6 @@ public class ControllerInput : MonoBehaviour
                     droneViewCam.cycleMode();
                 }
                 leftPrimaryPressedLast = primary.isPressed;
-            
             }
 
             if (secondary != null)
@@ -97,6 +99,17 @@ public class ControllerInput : MonoBehaviour
                     Debug.Log("Left Y Button Just Pressed");
 
                 leftSecondaryPressedLast = secondary.isPressed;
+            }
+
+            // Add debug print for the left option/menu button
+            if (option != null)
+            {
+                if (option.isPressed && !leftOptionPressedLast)
+                {
+                    Debug.Log("Left Option/Menu Button Just Pressed");
+                    droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
+                }                
+                leftOptionPressedLast = option.isPressed;
             }
         }
 

@@ -39,8 +39,8 @@ public class FuelMeter : MonoBehaviour {
         if (currentDrone != null) {
             batteryPercentage = currentDrone.BatteryPercentage * 100;
             batteryVoltage = currentDrone.BatteryVoltage;
-            Debug.Log($"Battery percentage: {batteryPercentage}%");
-            Debug.Log($"Battery voltage: {batteryVoltage}V");
+            //Debug.Log($"Battery percentage: {batteryPercentage}%");
+            //Debug.Log($"Battery voltage: {batteryVoltage}V");
         }
         
         k = Mathf.Clamp(k, 0.5f, 2f);

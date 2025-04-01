@@ -116,7 +116,7 @@ public class RaceClient : MonoBehaviour
             string status = PlayerPrefs.GetString("status");
     
             //Testing recomment later
-            //raceUdp = udpPort.ToString();
+            raceUdp = udpPort.ToString();
 
             Debug.Log($"[RaceClient] Loaded Race Data:");
             Debug.Log($"  - UDP Port: {udpPort}");
@@ -321,15 +321,16 @@ public class RaceClient : MonoBehaviour
 
             websocket.OnMessage += (bytes) =>
             {
-                Debug.Log("[WS] OnMessage event fired");
+                //Debug.Log("[WS] OnMessage event fired");
                 try
                 {
                     var message = Encoding.UTF8.GetString(bytes);
                     // Debug.Log($"[WS] Received message length: {bytes.Length}");
                     // Debug.Log($"[WS] Decoded message: {message}");
+                    //Debug.Log("RECIEVED MESSAGE SGUABYOHFNDM");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
-                    Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                    //Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
 
                     // Update the drone's position and rotation
                     if (DataManager.Instance == null)
