@@ -1,7 +1,10 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Text.RegularExpressions;
+using TMPro;
+
 
 [System.Serializable]
 public class RootResponse
@@ -51,8 +54,118 @@ public class RaceReplayer : MonoBehaviour
 {
     private string baseApiUrl;
     public string raceID;
+    [SerializeField] public bool isPaused = true;
 
-    
+    private DroneData[] replayPackets;
+    private Coroutine replayCoroutine;
+    private int currentIndex = 0;
+    private float replayStartTime;
+
+    public Slider replaySlider;
+    public float replayDuration; // Total duration in seconds
+    private bool isSliderBeingDragged = false;
+    private bool wasPlayingBeforeDrag = false;
+    public TMPro.TextMeshProUGUI timestampDisplay;
+
+
+
+    public void OnSliderDragStart()
+    {
+        if (!isPaused) // Only pause if it was moving
+        {
+            wasPlayingBeforeDrag = true;
+            TogglePause(); // Pause
+        }
+        else
+        {
+            wasPlayingBeforeDrag = false;
+        }
+
+        isSliderBeingDragged = true;
+    }
+
+
+    public void OnSliderDragEnd()
+    {
+        isSliderBeingDragged = false;
+
+        if (replaySlider == null || replayPackets == null) return;
+
+        JumpToTime(replaySlider.value);
+
+        if (wasPlayingBeforeDrag)
+        {
+            TogglePause(); // Resume
+        }
+    }
+
+    public void OnSliderChanged(float value)
+    {
+        if (isSliderBeingDragged)
+        {
+            JumpToTime(value);
+        }
+    }
+
+
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+        Debug.Log("Toggling pause state: " + isPaused);
+
+        if (!isPaused && replayCoroutine == null)
+        {
+            float flightStartTime = replayPackets[0].timestamp;
+            float currentPacketTime = replayPackets[currentIndex].timestamp;
+            replayStartTime = Time.realtimeSinceStartup - (currentPacketTime - flightStartTime);
+            replayCoroutine = StartCoroutine(PlayReplay());
+        }
+    }
+
+    public void JumpToTime(float targetTime)
+    {
+        if (replayPackets == null || replayPackets.Length == 0) return;
+
+        int index = FindClosestPacketIndex(replayPackets, targetTime);
+        currentIndex = index;
+
+        float flightStartTime = replayPackets[0].timestamp;
+        float currentPacketTime = replayPackets[currentIndex].timestamp;
+        replayStartTime = Time.realtimeSinceStartup - (currentPacketTime - flightStartTime);
+
+        if (!isPaused && replayCoroutine == null)
+            replayCoroutine = StartCoroutine(PlayReplay());
+
+        // Move the drone to that timestamp
+        if (isPaused && DataManager.Instance != null)
+            DataManager.Instance.UpdateDroneData(replayPackets[currentIndex]);
+
+        // ⏱ Update the timestamp text right here
+        if (timestampDisplay != null)
+        {
+            int curMin = Mathf.FloorToInt(currentPacketTime / 60f);
+            int curSec = Mathf.FloorToInt(currentPacketTime % 60f);
+
+            int totalMin = Mathf.FloorToInt(replayDuration / 60f);
+            int totalSec = Mathf.FloorToInt(replayDuration % 60f);
+
+            timestampDisplay.text = $"{curMin:D2}:{curSec:D2} / {totalMin:D2}:{totalSec:D2}";
+        }
+    }
+
+    int FindClosestPacketIndex(DroneData[] packets, float targetTime)
+    {
+        int left = 0, right = packets.Length - 1;
+        while (left < right)
+        {
+            int mid = (left + right) / 2;
+            if (packets[mid].timestamp < targetTime)
+                left = mid + 1;
+            else
+                right = mid;
+        }
+        return left;
+    }
 
     void Start()
     {
@@ -78,7 +191,6 @@ public class RaceReplayer : MonoBehaviour
     IEnumerator LoadReplayData(string raceID)
     {
         baseApiUrl = ConfigLoader.GetApiUrl();
-        Debug.Log("aaa: " + baseApiUrl + "/replay_race/" + raceID);
         UnityWebRequest request = UnityWebRequest.Get(baseApiUrl + "/replay_race/" + raceID);
         yield return request.SendWebRequest();
 
@@ -93,49 +205,87 @@ public class RaceReplayer : MonoBehaviour
             string fixedRaw = JsonHelper.FixJsonArray(root.race.flight_packet);
             string[] rawPackets = JsonHelper.FromJson<string>(fixedRaw);
 
-            DroneData[] processedPackets = new DroneData[rawPackets.Length];
+            replayPackets = new DroneData[rawPackets.Length];
             for (int i = 0; i < rawPackets.Length; i++)
             {
                 string raw = rawPackets[i].Replace("\\n", "").Replace("\\\"", "\"").Trim();
-
-                // Replace drone_id array with "ip:port" string
                 raw = Regex.Replace(raw, "\"drone_id\":\\s*\\[\\s*\"(.*?)\"\\s*,\\s*(\\d+)\\s*\\]", "\"drone_id\": \"$1:$2\"");
-
-                processedPackets[i] = JsonUtility.FromJson<DroneData>(raw);
+                replayPackets[i] = JsonUtility.FromJson<DroneData>(raw);
             }
 
-            RaceReplayResponse replayData = new RaceReplayResponse
-            {
-                raceID = root.race.race_id,
-                raceName = root.race.race_name,
-                driftMap = root.race.drift_map,
-                packets = processedPackets
-            };
-
-            Debug.Log("Race name: " + replayData.raceName);
-            Debug.Log("Packets count: " + replayData.packets.Length);
+            Debug.Log("Race name: " + root.race.race_name);
+            Debug.Log("Packets count: " + replayPackets.Length);
 
             if (DataManager.Instance == null)
             {
                 Debug.LogError("DataManager.Instance is still null at this point in time!");
             }
 
-            Debug.Log("balls");
-
-            StartCoroutine(PlayReplay(replayData.packets));
-        }
-    }
-
-    IEnumerator PlayReplay(DroneData[] packets)
-    {
-        foreach (DroneData packet in packets)
-        {
-            if (DataManager.Instance != null)
+            replayDuration = replayPackets[replayPackets.Length - 1].timestamp;
+            if (replaySlider != null)
             {
-                DataManager.Instance.UpdateDroneData(packet);
+                replaySlider.minValue = 0;
+                replaySlider.maxValue = replayDuration;
+                replaySlider.onValueChanged.AddListener(OnSliderChanged);
             }
-            yield return new WaitForSecondsRealtime(0.02f); // ~50 FPS
+
+            currentIndex = 0;
+            DataManager.Instance.UpdateDroneData(replayPackets[0]);            
         }
     }
 
+    IEnumerator PlayReplay()
+    {
+        if (replayPackets == null || replayPackets.Length == 0) yield break;
+
+        float flightStartTime = replayPackets[0].timestamp;
+
+        while (currentIndex < replayPackets.Length)
+        {
+            DroneData packet = replayPackets[currentIndex];
+            float targetTime = replayStartTime + (packet.timestamp - flightStartTime);
+
+            // Wait until the right time or until paused
+            while (Time.realtimeSinceStartup < targetTime || isPaused)
+            {
+                if (isPaused)
+                {
+                    replayStartTime += Time.unscaledDeltaTime;
+                }
+
+                // 🧠 Smooth slider update here
+                if (!isSliderBeingDragged && replaySlider != null)
+                {
+                    float currentTime = Time.realtimeSinceStartup - replayStartTime + replayPackets[0].timestamp;
+                    replaySlider.value = currentTime;
+
+                    if (timestampDisplay != null)
+                    {
+                        int curMin = Mathf.FloorToInt(currentTime / 60f);
+                        int curSec = Mathf.FloorToInt(currentTime % 60f);
+
+                        int totalMin = Mathf.FloorToInt(replayDuration / 60f);
+                        int totalSec = Mathf.FloorToInt(replayDuration % 60f);
+
+                        timestampDisplay.text = $"{curMin:D2}:{curSec:D2} / {totalMin:D2}:{totalSec:D2}";
+                    }
+                }
+
+                yield return null;
+
+                // Refresh packet in case JumpToTime() changed currentIndex
+                packet = replayPackets[currentIndex];
+                targetTime = replayStartTime + (packet.timestamp - flightStartTime);
+            }
+
+            DataManager.Instance?.UpdateDroneData(packet);
+
+            if (!isSliderBeingDragged && replaySlider != null)
+            {
+                replaySlider.value = packet.timestamp;
+            }
+
+            currentIndex++;
+        }
+    }
 }
