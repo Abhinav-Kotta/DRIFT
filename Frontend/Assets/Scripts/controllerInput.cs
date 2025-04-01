@@ -8,6 +8,8 @@ public class ControllerInput : MonoBehaviour
 {
     public static ControllerInput Instance { get; private set; } // Singleton instance
 
+    private bool canEnd;
+
     bool rightPrimaryPressedLast = false;
     bool rightSecondaryPressedLast = false;
     bool leftPrimaryPressedLast = false;
@@ -117,12 +119,15 @@ public class ControllerInput : MonoBehaviour
                 }
                 if (trigger != null && trigger.isPressed && !leftTriggerPressedLast)
                 {
+
                     Debug.Log("Left Trigger Button Just Pressed -> End Race");
-                    SceneManager.LoadScene("StartingScene");
+                    if(canEnd)
+                        SceneManager.LoadScene("StartingScene");
                 }
                 if (option.isPressed && !leftOptionPressedLast)
                 {
                     Debug.Log("Left Option/Menu Button Just Pressed");
+                    canEnd != canEnd;
                     droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
                 }                
                 leftOptionPressedLast = option.isPressed;

@@ -49,6 +49,7 @@ class RaceServer:
         self.udp_servers: Dict[int, socket.socket] = {}
         self.shutdown_event = asyncio.Event()
         self.race_caches: Dict[int, List[str]] = {}  # Separate cache per race
+        self.users_in_race: Dict[int, Set[int]] = {} # dict of users that entered a race
         self.race_id_to_port: Dict[str, int] = {}  # Map race_id to UDP port
 
     def map_race_id_to_port(self, race_id: str, udp_port: int):

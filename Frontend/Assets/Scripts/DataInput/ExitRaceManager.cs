@@ -71,7 +71,7 @@ public class ExitRaceButton : MonoBehaviour
 
     IEnumerator GetRaceCreatorInfo(string raceId)
     {
-        string watchRaceUrl = $"{baseApiUrl}/watch_race/{raceId}";
+        string watchRaceUrl = $"{baseApiUrl}/watch_race/{raceId}/{userManager.UserId}";
         
         using (UnityWebRequest www = UnityWebRequest.Get(watchRaceUrl))
         {
