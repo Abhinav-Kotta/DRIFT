@@ -22,6 +22,17 @@ public class RaceResponse
 }
 
 [Serializable]
+public class ReplayResponse
+{
+    public string race_id;
+    public string race_name;
+    public string drift_map;
+    public string created_at;
+    public string user_id;
+    public int race_size_bytes;
+}
+
+[Serializable]
 public class RaceListResponse
 {
     public RaceEntry[] races;

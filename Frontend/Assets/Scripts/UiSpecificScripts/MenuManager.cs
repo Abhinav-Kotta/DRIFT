@@ -27,4 +27,9 @@ public class MenuManager : MonoBehaviour
     {
         SceneManager.LoadScene("SignIn");
     }
+
+    public void Replay()
+    {
+        SceneManager.LoadScene("ListReplays");
+    }
 }

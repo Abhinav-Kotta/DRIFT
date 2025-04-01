@@ -30,6 +30,9 @@ EditorBuildSettings:
     path: Assets/Scenes/TestingOverlay.unity
     guid: 7d1f54b8ee418d34d90b80f0310f4c5e
   - enabled: 1
+    path: Assets/Scenes/RealReplay.unity
+    guid: 2b75ca957280e7a4da753ad94d736d29
+  - enabled: 1
     path: Assets/Scenes/ForgotPW.unity
     guid: f2316260756b50248847892e2a1c76e6
   m_configObjects:

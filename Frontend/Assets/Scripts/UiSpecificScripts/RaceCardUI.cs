@@ -47,4 +47,29 @@ public class RaceCardUI : MonoBehaviour
         SceneManager.LoadScene("TestingOverlay");
     }
 
+    public void LoadReplay()
+    {
+        Debug.Log("[RaceCardUI] LoadRace called.");
+
+        // Extract the string values from the TMP text fields
+        string udpPort = udpPortText.text.Replace("UDP Port: ", "");
+        string status = raceStatusText.text.Replace("Status: ", "");
+
+        Debug.Log($"[RaceCardUI] Parsed values:");
+        Debug.Log($"  - UDP Port: {udpPort}");
+        Debug.Log($"  - Race ID: {raceID}");
+        Debug.Log($"  - Status: {status}");
+
+        // Store values in PlayerPrefs
+        PlayerPrefs.SetString("udpPort", udpPort);
+        PlayerPrefs.SetString("raceID", raceID);
+        PlayerPrefs.SetString("status", status);
+        PlayerPrefs.Save();
+
+        Debug.Log("[RaceCardUI] PlayerPrefs saved. Loading SampleScene...");
+
+        // Load the Sample Scene
+        SceneManager.LoadScene("RealReplay");
+    }
+
 }

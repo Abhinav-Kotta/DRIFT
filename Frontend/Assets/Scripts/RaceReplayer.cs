@@ -174,6 +174,12 @@ public class RaceReplayer : MonoBehaviour
     void Start()
     {
         Debug.Log("Replay data loading....");
+        raceID = PlayerPrefs.GetString("raceID", string.Empty);
+        if (raceID == "")
+        {
+            Debug.LogError("No raceID found in PlayerPrefs. Cannot load replay data.");
+            return;
+        }
         StartCoroutine(LoadReplayData(raceID));
     }
 
