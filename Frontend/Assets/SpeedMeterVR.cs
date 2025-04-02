@@ -50,7 +50,7 @@ public class SpeedMeterVR : MonoBehaviour
         // Move the pointer based on AltMValue
         if (pointer.targetObject != null)
         {
-            Vector3 pointerPosition = pointer.targetObject.transform.localPosition;
+            //Vector3 pointerPosition = pointer.targetObject.transform.localPosition;
             
 
             float clamped = Mathf.Clamp(velocity, 0, 90);
@@ -87,11 +87,11 @@ public class SpeedMeterVR : MonoBehaviour
         // Preserve manual scale changes made in the Inspector
         if (!Application.isPlaying) 
         {
-            data.scale = data.targetObject.transform.localScale; // Store the new scale
+           // data.scale = data.targetObject.transform.localScale; // Store the new scale
         }
         else 
         {
-            data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
+            //data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
         }
     }
 
