@@ -15,11 +15,12 @@ public class raceGate : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        Debug.Log("Trigger Entered by: " + other.gameObject.name);
+        //Debug.Log("Trigger Entered by: " + other.gameObject.name);
         // Check if the object that exited the trigger has a DroneMover component
         DroneMover droneMover = other.gameObject.GetComponent<DroneMover>();
         if (droneMover != null)
         {
+            //Debug.Log("DroneMover found: " + droneMover.gameObject.name);
             // Call the PassGate method on the DroneMover component
             droneMover.PassGate();
         }
