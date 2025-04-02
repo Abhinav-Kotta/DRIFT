@@ -1,7 +1,6 @@
 using System;
 using TMPro.Examples;
 using UnityEditor;
-using UnityEditor.ShaderGraph;
 using UnityEngine;
 
 public class DroneViewCam : MonoBehaviour
