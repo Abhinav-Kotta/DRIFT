@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using UnityEditor.PackageManager;
 
 public class SignInScript : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class SignInScript : MonoBehaviour
     [SerializeField] private TMP_InputField usernameField;
     [SerializeField] private TMP_InputField passwordField;
     [SerializeField] private TextMeshProUGUI errorText;
+    [SerializeField] private TMP_Text ErrorMessage;
     
     private string apiUrl;
     
@@ -39,6 +41,11 @@ public class SignInScript : MonoBehaviour
         if (passwordField == null)
             passwordField = GameObject.Find("PasswordField")?.GetComponent<TMP_InputField>();
 
+        if (ErrorMessage == null)
+            ErrorMessage = GameObject.Find("ErrorMessage").GetComponent<TMP_Text>();
+        
+        ErrorMessage.text = "";
+
         if (usernameField == null || passwordField == null)
         {
             Debug.LogError("Username or password field not found");
@@ -58,6 +65,9 @@ public class SignInScript : MonoBehaviour
         {
             if (errorText != null)
                 errorText.text = "Please enter both username and password.";
+            
+            ErrorMessage.text = errorText.text;
+            ErrorMessage.color = Color.red;
             return;
         }
         
@@ -72,78 +82,65 @@ public class SignInScript : MonoBehaviour
 
     IEnumerator SignIn()
     {
-        // Prepare login data
         string jsonPayload = JsonUtility.ToJson(new LoginData(usernameField.text, passwordField.text));
-        
-        // Log the URL being used (for debugging purposes)
         Debug.Log($"Connecting to: {apiUrl}/login");
         Debug.Log($"Payload: {jsonPayload}");
 
-        // Create web request
         using (UnityWebRequest www = new UnityWebRequest($"{apiUrl}/login", "POST"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
-            
             www.timeout = 5;
-            
-            yield return www.SendWebRequest();
 
+            yield return www.SendWebRequest();
             signInButton.interactable = true;
-            
-            if (www.result != UnityWebRequest.Result.Success)
+
+            string result = www.downloadHandler.text;
+
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                SceneManager.LoadScene("SignIn");
+                Debug.Log($"Login successful: {result}");
+
+                LoginResponse response = JsonUtility.FromJson<LoginResponse>(result);
+
+                ErrorMessage.color = Color.green;
+                ErrorMessage.text = "Login successful!";
+                Debug.Log($"Extracted user ID: {response.user_id}");
+
+                if (UserManager.Instance != null)
+                {
+                    UserManager.Instance.SetUserInfo(response.user_id, usernameField.text);
+                    Debug.Log("User info set in UserManager");
+                    SceneManager.LoadScene("StartingScene");
+                }
+                else
+                {
+                    Debug.LogError("UserManager instance not found");
+                    if (errorText != null)
+                        errorText.text = "Internal error. Please restart the application.";
+                }
             }
             else
             {
-                string result = www.downloadHandler.text;
-                Debug.Log($"Login successful: {result}");
-                
-                try
+                Debug.LogError($"Network error: {www.error}");
+                Debug.LogError($"Server response: {result}");
+
+                string detailMessage = "Network or server error.";
+
+                if (!string.IsNullOrEmpty(result) && result.Contains("detail"))
                 {
-                    // Parse the response
-                    LoginResponse response = JsonUtility.FromJson<LoginResponse>(result);
-                    
-                    // Check if login was successful based on status field
-                    if (response.status == "success")
-                    {
-                        // Extract the user ID (now directly in user_id field)
-                        int userId = response.user_id;
-                        Debug.Log($"Extracted user ID: {userId}");
-                        
-                        // Store user info
-                        if (UserManager.Instance != null)
-                        {
-                            UserManager.Instance.SetUserInfo(userId, usernameField.text);
-                            Debug.Log("User info set in UserManager");
-                            
-                            // Navigate to main screen or home page
-                            SceneManager.LoadScene("StartingScene"); 
-                        }
-                        else
-                        {
-                            Debug.LogError("UserManager instance not found");
-                            if (errorText != null)
-                                errorText.text = "Internal error. Please restart the application.";
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogError($"Login failed: {response.message}");
-                        if (errorText != null)
-                            errorText.text = response.message;
-                    }
+                    int startIndex = result.IndexOf(":") + 2;
+                    int endIndex = result.LastIndexOf("\"");
+                    if (startIndex > 0 && endIndex > startIndex)
+                        detailMessage = result.Substring(startIndex, endIndex - startIndex);
                 }
-                catch (System.Exception e)
-                {
-                    Debug.LogError($"Error parsing response: {e.Message}");
-                    Debug.LogError($"Raw response: {result}");
-                    if (errorText != null)
-                        errorText.text = "Server returned an invalid response.";
-                }
+
+                if (errorText != null)
+                    errorText.text = detailMessage;
+                ErrorMessage.text = errorText.text;
+                ErrorMessage.color = Color.red;
             }
         }
     }
