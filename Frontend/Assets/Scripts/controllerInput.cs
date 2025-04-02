@@ -56,8 +56,10 @@ public class ControllerInput : MonoBehaviour
             return;
         }
         dataManager = DataManager.Instance;
-        endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
-        deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
+        if (SceneManager.GetActiveScene().name == "TestingOverlay")
+            endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        if (SceneManager.GetActiveScene().name == "RealReplay")
+            deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
     }
 
     void Update()
@@ -67,11 +69,11 @@ public class ControllerInput : MonoBehaviour
         {
             return;
         }
-        if (endRaceButton == null)
+        if (endRaceButton == null && SceneManager.GetActiveScene().name == "TestingOverlay")
         {
             endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
         }
-        if (deleteRaceButton == null)
+        if (deleteRaceButton == null && SceneManager.GetActiveScene().name == "RaceReplay")
         {
             deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
         }
