@@ -20,4 +20,10 @@ public class LoadManager : MonoBehaviour
         Debug.Log("Loading Forgot Password Scene...");
         SceneManager.LoadScene("ForgotPW");
     }
+
+    public void SignIn()
+    {
+        Debug.Log("Loading SignIn Scene...");
+        SceneManager.LoadScene("SignIn");
+    }
 }

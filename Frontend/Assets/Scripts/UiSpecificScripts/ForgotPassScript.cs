@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class ForgotPassScript : MonoBehaviour
 {
@@ -55,6 +56,7 @@ public class ForgotPassScript : MonoBehaviour
         {
             string result = www.downloadHandler.text;
             Debug.Log(result);
+            SceneManager.LoadScene("SignIn"); // Load the login scene after successful password reset
         }
     }
 }
