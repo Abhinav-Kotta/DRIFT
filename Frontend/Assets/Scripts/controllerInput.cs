@@ -12,6 +12,7 @@ public class ControllerInput : MonoBehaviour
     private bool canEnd;
 
     private Button endRaceButton;
+    private Button deleteRaceButton;
 
     bool rightPrimaryPressedLast = false;
     bool rightSecondaryPressedLast = false;
@@ -56,10 +57,24 @@ public class ControllerInput : MonoBehaviour
         }
         dataManager = DataManager.Instance;
         endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
     }
 
     void Update()
     {
+
+        if (SceneManager.GetActiveScene().name != "RealReplay" || SceneManager.GetActiveScene().name != "TestingOverlay")
+        {
+            return;
+        }
+        if (endRaceButton == null)
+        {
+            endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        }
+        if (deleteRaceButton == null)
+        {
+            deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
+        }
         var leftHand = InputSystem.GetDevice<XRController>(CommonUsages.LeftHand);
         var rightHand = InputSystem.GetDevice<XRController>(CommonUsages.RightHand);
 
@@ -123,7 +138,7 @@ public class ControllerInput : MonoBehaviour
                 if (grip != null && grip.isPressed && !leftGripPressedLast)
                 {
                     Debug.Log("Left Grip Button Just Pressed -> Exit Race");
-                    SceneManager.LoadScene("Import");
+                    SceneManager.LoadScene("StartingScene");
                 }
                 if (trigger != null && trigger.isPressed && !leftTriggerPressedLast)
                 {
@@ -131,7 +146,14 @@ public class ControllerInput : MonoBehaviour
                     Debug.Log("Left Trigger Button Just Pressed -> End Race");
                     if(canEnd)
                     {
-                        endRaceButton.onClick.Invoke();
+                        if (SceneManager.GetActiveScene().name == "TestingOverlay")
+                        {
+                            endRaceButton.onClick.Invoke();
+                        }
+                        else
+                        {
+                            deleteRaceButton.onClick.Invoke();
+                        }
                         SceneManager.LoadScene("StartingScene");
                     }
                 }
