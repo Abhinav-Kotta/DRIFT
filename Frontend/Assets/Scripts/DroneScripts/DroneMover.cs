@@ -69,10 +69,11 @@ public class DroneMover : MonoBehaviour
     [SerializeField] [Range(0, 5000)] int motorSpeed3 = 0;
     [SerializeField] [Range(0, 5000)] int motorSpeed4 = 0;
 
-    GameObject propeller1;
-    GameObject propeller2;
-    GameObject propeller3;
-    GameObject propeller4;
+
+    public GameObject propeller1;
+    public GameObject propeller2;
+    public GameObject propeller3;
+    public GameObject propeller4;
 
     void Start()
     {
@@ -84,14 +85,6 @@ public class DroneMover : MonoBehaviour
 
         y = initY;
 
-        // propeller1 = transform.Find("propeller.1").gameObject;
-        // propeller2 = transform.Find("propeller.2").gameObject;
-        // propeller3 = transform.Find("propeller.3").gameObject;  
-        // propeller4 = transform.Find("propeller.4").gameObject;
-        // if (propeller1 == null || propeller2 == null || propeller3 == null || propeller4 == null)
-        // {
-        //     Debug.LogError("Propellers not found");
-        // }
     }
 
     void Update()
@@ -166,44 +159,33 @@ public class DroneMover : MonoBehaviour
 
     public void setProps(float[] rotationStats)
     {
-        // May need to change type of this depending on format received from liftoff. For now we will use char array as it is the most flexible
+        // Check if motorRpms is null or has fewer than 4 elements
+        if (rotationStats == null || rotationStats.Length < 4)
+        {
+            Debug.LogError("Invalid motor RPM data. Ensure the array is not null and has at least 4 elements.");
+            return;
+        }
 
-        /*MotorRPM (1 byte + (1 float * number of motors)) - the rotations per minute for each
-        motor. The byte at the front of this piece of data defines the amount of motors on the
-        drone, and thus how many floats you can expect to find next. The sequence of motors for
-        a quadcopter in Liftoff is as follows: left front, right front, left back, right back.*/
-        // Given we are going to use four propellers we only care about 17 bytes which is 136 bits
-        
-        // Get the number of motors if not four. WTF. just set the rotation to some number
-        int numMotors = (int)rotationStats[0];
-        
-        // if (numMotors != 4)
-        // {
-        //     Debug.LogError("Number of motors is not 4");
-        //     // Front two propellers
-        //     propeller1.transform.Rotate(0, 0, 1200 * Time.deltaTime);
-        //     propeller2.transform.Rotate(0, 0, 1200 * Time.deltaTime);
+        // Assign motor RPMs to the local array
+        motorRpms = rotationStats;
 
-        //     // Back two propellers
-        //     propeller3.transform.Rotate(0, 0, -1200 * Time.deltaTime);
-        //     propeller4.transform.Rotate(0, 0, -1200 * Time.deltaTime);
-        //     return;
-        // }
-       
-        // // 17 bytes total. 1 byte for number of motors and 4 floats (which are 4 bytes total) for each motor
-        // // Decode the floats for each motor (each float is 4 bytes)
-        // float motor1 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[1], (byte)rotationStats[2], (byte)rotationStats[3], (byte)rotationStats[4] }, 0);
-        // float motor2 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[5], (byte)rotationStats[6], (byte)rotationStats[7], (byte)rotationStats[8] }, 0);
-        // float motor3 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[9], (byte)rotationStats[10], (byte)rotationStats[11], (byte)rotationStats[12] }, 0);
-        // float motor4 = BitConverter.ToSingle(new byte[] { (byte)rotationStats[13], (byte)rotationStats[14], (byte)rotationStats[15], (byte)rotationStats[16] }, 0);
+        // Extract motor RPM values
+        float motor1 = motorRpms[0];
+        float motor2 = motorRpms[1];
+        float motor3 = motorRpms[2];
+        float motor4 = motorRpms[3];
 
-        // // Front two propellers
-        // propeller1.transform.Rotate(0, 0, motor1 * Time.deltaTime);
-        // propeller2.transform.Rotate(0, 0, motor2 * Time.deltaTime);
+        // Rotate the propellers based on motor RPMs
+        if (propeller1 != null)
+            propeller1.transform.Rotate(0, 0, motor1 * Time.deltaTime);
 
-        // // Back two propellers. May need to change the sign of the rotation if propeller value from liftoff is signed
-        // propeller3.transform.Rotate(0, 0, -motor3 * Time.deltaTime);
-        // propeller4.transform.Rotate(0, 0, -motor4 * Time.deltaTime);
+        if (propeller2 != null)
+            propeller2.transform.Rotate(0, 0, motor2 * Time.deltaTime);
+
+        if (propeller3 != null)
+            propeller3.transform.Rotate(0, 0, -motor3 * Time.deltaTime); // Negative for counter-rotation
+        if (propeller4 != null)
+            propeller4.transform.Rotate(0, 0, -motor4 * Time.deltaTime); // Negative for counter-rotation
     }
 
     // Getters

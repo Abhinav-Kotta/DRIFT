@@ -341,7 +341,11 @@ public class RaceClient : MonoBehaviour
                     //Debug.Log("RECIEVED MESSAGE SGUABYOHFNDM");
 
                     var droneData = JsonConvert.DeserializeObject<DroneData>(message);
-                    //Debug.Log($"[WS] Position: x={droneData.position.x}, y={droneData.position.y}, z={droneData.position.z}");
+                    string motorRpmData = droneData.motor_rpms != null 
+                    ? string.Join(", ", droneData.motor_rpms) 
+                    : "No motor RPM data available";
+
+                    Debug.Log($"[WS] Prop Data: [{motorRpmData}] | Motor Count: {droneData.motor_count}");
 
                     // Update the drone's position and rotation
                     if (DataManager.Instance == null)
