@@ -4,12 +4,13 @@ using UnityEngine;
 [ExecuteAlways] // Ensures the script runs in edit mode
 public class DisplayTexture : MonoBehaviour
 {
+    public GameObject dash;
     [System.Serializable] // Keeps it serializable in Inspector
     public class SpriteData
     {
         public GameObject targetObject; // Assign in Inspector
         public Texture2D texture;  
-        public Vector3 scale = new Vector3(1, 1, 1); // Default scale
+        //public Vector2 scale; // Default scale
     }
 
     public SpriteData background, numbers, pointer, pointer2; // Serialized fields
@@ -49,7 +50,8 @@ public class DisplayTexture : MonoBehaviour
         // Move the pointer based on AltMValue
         if (pointer.targetObject != null)
         {
-            Vector3 pointerPosition = pointer.targetObject.transform.localPosition;
+
+
             
 
             float clamped = Mathf.Clamp(AltMValue % 100, 0, 100);
@@ -59,12 +61,12 @@ public class DisplayTexture : MonoBehaviour
 
             //pointerPosition.y = Mathf.Clamp(pointerPosition.y, -5f, 5f);
 
-            pointer.targetObject.transform.rotation = Quaternion.Euler(0, 0, -rotationZ); // Negative for clockwise rotation
+            pointer.targetObject.transform.localRotation = Quaternion.Euler(0, 0, -rotationZ); // Negative for clockwise rotation
 
             float clamped2 = Mathf.Clamp(AltMValue % 10, 0, 100);
             float rotationZ2 = clamped2 * 36f;
 
-            pointer2.targetObject.transform.rotation = Quaternion.Euler(0, 0, -rotationZ2);
+            pointer2.targetObject.transform.localRotation = Quaternion.Euler(0, 0, -rotationZ2);
         }
     }
 
@@ -91,11 +93,11 @@ public class DisplayTexture : MonoBehaviour
         // Preserve manual scale changes made in the Inspector
         if (!Application.isPlaying) 
         {
-            data.scale = data.targetObject.transform.localScale; // Store the new scale
+            //data.scale = data.targetObject.transform.localScale; // Store the new scale
         }
         else 
         {
-            data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
+            //data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
         }
     }
 

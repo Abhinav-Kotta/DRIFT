@@ -47,6 +47,7 @@ public class DroneViewCam : MonoBehaviour
     {   
         mode = 2;
         dataManager = DataManager.Instance;
+        gauges = GameObject.Find("Dashboard");
         if(dataManager == null)
             Debug.Log("DataManager not found.");
         //drone = DataManager.Instance.GetSelectedDrone();
@@ -87,10 +88,11 @@ public class DroneViewCam : MonoBehaviour
     private void firstPerson()
     {
         //Set Gauges and stick to be active in first person mode
-        if(gauges != null)
-            gauges.SetActive(true); // Turn off the gauges in no-clip mode
+         // Turn off the gauges in no-clip mode
         if(LeftStickView != null && RightStickView != null)
         {
+            if(gauges != null)
+                gauges.SetActive(true);
             LeftStickView.SetActive(true); // Turn off the left stick view in no-clip mode
             RightStickView.SetActive(true); // Turn off the right stick view in no-clip mode
         }
@@ -122,10 +124,11 @@ public class DroneViewCam : MonoBehaviour
     private void noClip()
     {
         //Set gauges and stick to be inactive in no-clip mode
-        if(gauges != null)
-            gauges.SetActive(false); // Turn off the gauges in no-clip mode
+         // Turn off the gauges in no-clip mode
         if(LeftStickView != null && RightStickView != null)
         {
+            if(gauges != null)
+                gauges.SetActive(false);
             LeftStickView.SetActive(false); // Turn off the left stick view in no-clip mode
             RightStickView.SetActive(false); // Turn off the right stick view in no-clip mode
         }
@@ -170,10 +173,11 @@ public class DroneViewCam : MonoBehaviour
     private void thirdPerson()
     {
         //Set Gauges and stick to be active in third person mode
-        if(gauges != null)
-            gauges.SetActive(true); // Turn off the gauges in no-clip mode
+         // Turn off the gauges in no-clip mode
         if(LeftStickView != null && RightStickView != null)
         {
+            if(gauges != null)
+                gauges.SetActive(true);
             LeftStickView.SetActive(true); // Turn off the left stick view in no-clip mode
             RightStickView.SetActive(true); // Turn off the right stick view in no-clip mode
         }

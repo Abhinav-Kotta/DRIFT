@@ -9,7 +9,7 @@ public class FuelMeterVRScript : MonoBehaviour
     {
         public GameObject targetObject; // Assign in Inspector
         public Texture2D texture;  
-        public Vector3 scale = new Vector3(1, 1, 1); // Default scale
+        //public Vector3 scale = new Vector3(1, 1, 1); // Default scale
     }
 
     public SpriteData background, fuel, pointer; // Serialized fields
@@ -66,7 +66,7 @@ public class FuelMeterVRScript : MonoBehaviour
             //     angle = Mathf.Lerp(90f, 180f, (clamped - 0.2f) / 0.8f);
             // }
             
-            pointer.targetObject.transform.rotation = Quaternion.Euler(0, 0, angle);
+            pointer.targetObject.transform.localRotation = Quaternion.Euler(0, 0, angle);
         }
     }
 
@@ -93,11 +93,11 @@ public class FuelMeterVRScript : MonoBehaviour
         // Preserve manual scale changes made in the Inspector
         if (!Application.isPlaying) 
         {
-            data.scale = data.targetObject.transform.localScale; // Store the new scale
+            //data.scale = data.targetObject.transform.localScale; // Store the new scale
         }
         else 
         {
-            data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
+            //data.targetObject.transform.localScale = data.scale; // Apply scale in Play mode
         }
     }
 

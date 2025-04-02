@@ -9,7 +9,7 @@ public class SpeedMeterVR : MonoBehaviour
     {
         public GameObject targetObject; // Assign in Inspector
         public Texture2D texture;  
-        public Vector3 scale = new Vector3(1, 1, 1); // Default scale
+        //public Vector3 scale = new Vector3(1, 1, 1); // Default scale
     }
 
     public SpriteData background, numbers, pointer;
@@ -60,7 +60,7 @@ public class SpeedMeterVR : MonoBehaviour
 
             //pointerPosition.y = Mathf.Clamp(pointerPosition.y, -5f, 5f);
 
-            pointer.targetObject.transform.rotation = Quaternion.Euler(0, 0, -rotationZ); // Negative for clockwise rotation
+            pointer.targetObject.transform.localRotation = Quaternion.Euler(0, 0, -rotationZ);
         }
     }
 
