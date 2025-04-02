@@ -12,6 +12,7 @@ public class ControllerInput : MonoBehaviour
     private bool canEnd;
 
     private Button endRaceButton;
+    private Button deleteRaceButton;
 
     bool rightPrimaryPressedLast = false;
     bool rightSecondaryPressedLast = false;
@@ -44,10 +45,6 @@ public class ControllerInput : MonoBehaviour
 
     void Start()
     {
-        if (SceneManager.GetActiveScene().name == "StartingScene")
-        {
-            return;
-        }
         droneViewCam = FindObjectOfType<DroneViewCam>();
         if (droneViewCam == null)
         {
@@ -55,11 +52,28 @@ public class ControllerInput : MonoBehaviour
             return;
         }
         dataManager = DataManager.Instance;
-        endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        if (SceneManager.GetActiveScene().name == "TestingOverlay")
+            endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        if (SceneManager.GetActiveScene().name == "RealReplay")
+            deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
     }
 
     void Update()
     {
+
+        if (SceneManager.GetActiveScene().name != "RealReplay" && SceneManager.GetActiveScene().name != "TestingOverlay")
+        {
+            return;
+        }
+        if (endRaceButton == null && SceneManager.GetActiveScene().name == "TestingOverlay")
+        {
+            endRaceButton = GameObject.Find("EndRace").GetComponent<Button>();
+        }
+        if (deleteRaceButton == null && SceneManager.GetActiveScene().name == "RealReplay")
+        {
+            deleteRaceButton = GameObject.Find("Delete").GetComponent<Button>();
+        }
+
         var leftHand = InputSystem.GetDevice<XRController>(CommonUsages.LeftHand);
         var rightHand = InputSystem.GetDevice<XRController>(CommonUsages.RightHand);
 
@@ -119,29 +133,38 @@ public class ControllerInput : MonoBehaviour
             // Add debug print for the left option/menu button
             if (option != null)
             {
-                // check if optionis pressed and grip is pressed after
+                if (option.isPressed && !leftOptionPressedLast)
+                {
+                    Debug.Log("Left Option/Menu Button Just Pressed");
+                    droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
+                }                
+                leftOptionPressedLast = option.isPressed;
+            }
+            if (droneViewCam.popupPanel.enabled)
+            {
+
                 if (grip != null && grip.isPressed && !leftGripPressedLast)
                 {
                     Debug.Log("Left Grip Button Just Pressed -> Exit Race");
-                    SceneManager.LoadScene("Import");
+                    SceneManager.LoadScene("StartingScene");
                 }
+                leftGripPressedLast = grip.isPressed;
                 if (trigger != null && trigger.isPressed && !leftTriggerPressedLast)
                 {
 
                     Debug.Log("Left Trigger Button Just Pressed -> End Race");
-                    if(canEnd)
+
+                    if (SceneManager.GetActiveScene().name == "TestingOverlay")
                     {
                         endRaceButton.onClick.Invoke();
-                        SceneManager.LoadScene("StartingScene");
                     }
+                    else
+                    {
+                        deleteRaceButton.onClick.Invoke();
+                    }
+                    SceneManager.LoadScene("StartingScene");
                 }
-                if (option.isPressed && !leftOptionPressedLast)
-                {
-                    Debug.Log("Left Option/Menu Button Just Pressed");
-                    canEnd = !canEnd;
-                    droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
-                }                
-                leftOptionPressedLast = option.isPressed;
+                leftTriggerPressedLast = trigger.isPressed; // Update the last state of the left trigger button
             }
         }
 

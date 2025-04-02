@@ -48,7 +48,7 @@ class ResetPasswordRequest(BaseModel):
 class SaveRaceRequest(BaseModel):
     race_name: str
     drift_map: str
-    user_id: str
+    user_id: List[int]
 
 # Dependency for DB connection
 async def get_db():
@@ -178,18 +178,18 @@ async def get_saved_race(race_id: str, db=Depends(get_db)):
 
 # Gets all the saved races for specific user: 
 @app.get("/user_races/{user_id}")
-async def get_user_saved_races(user_id: str, db=Depends(get_db)):
+async def get_user_saved_races(user_id: int, db=Depends(get_db)):
     try:
         races = await db.fetch(
             """
             SELECT race_id, race_name, drift_map, created_at, user_id, race_size_bytes 
             FROM races 
-            WHERE user_id::jsonb @> to_jsonb(array[$1])
+            WHERE user_id::jsonb @> $1::jsonb
             """,
-            user_id
+            json.dumps([user_id])
         )
-        if not races:
-            raise HTTPException(status_code=404, detail="No races found for this user")
+        # if not races:
+        #     raise HTTPException(status_code=404, detail="No races found for this user")
 
         return {"status": "success", "races": races}
 
@@ -232,8 +232,6 @@ async def delete_saved_race(race_id: str, user_id: int, db=Depends(get_db)):
         if isinstance(current_user_ids, str):
             import json
             current_user_ids = json.loads(current_user_ids)
-
-        user_id = int(user_id)
 
         if user_id in current_user_ids:
             current_user_ids.remove(user_id)
@@ -363,9 +361,7 @@ async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
         race_json = json.dumps(race_data)
         race_size_bytes = sys.getsizeof(race_json)
 
-        user_ids_set = race_server.get_user_race()[race_id]
-        user_ids = [str(user_id) for user_id in user_ids_set]
-        user_ids_json = json.dumps(user_ids)
+        user_ids_json = json.dumps(input.user_id)
 
         # Save the race data to the database
         await db.execute(
@@ -390,13 +386,40 @@ async def save_race(race_id: str, input: SaveRaceRequest, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error saving race data: {str(e)}")
     
 @app.delete("/end_race/{race_id}")
-async def end_race(race_id: str):
+async def end_race(race_id: str, db=Depends(get_db)):
     if race_id not in active_races:
         raise HTTPException(status_code=404, detail="Race not found")
 
     race_info = active_races.pop(race_id, None)
     if not race_info:
         raise HTTPException(status_code=404, detail="Race ID not found in active races")
+    try:
+        if race_id in race_server.get_user_race():
+                print("there is a race_id")
+                    # Get the list of all users who participated in or viewed the race
+                    # race_server.get_user_race()[race_id] is already a set of integers
+                user_ids = list(race_server.get_user_race()[race_id])
+                print("user ids: ", user_ids)
+                    
+                    # If there are no users, use the race creator's ID as fallback
+                if not user_ids:
+                    user_ids = [race_info.race_creator]
+                    print("race creator usr ids: ", user_ids)
+        else:
+            user_ids = [race_info.race_creator]
+            print("race creator usr ids: ", user_ids)
+
+        save_request = SaveRaceRequest(
+                race_name="race",
+                drift_map="arena",
+                user_id=user_ids
+            )
+            
+        save_result = await save_race(race_id, save_request, db)
+        print(f"[INFO] Race {race_id} saved with result: {save_result}")
+    except Exception as e:
+        import traceback
+        print(f"[WARNING] Failed to save race {race_id}: {str(e)}")
 
     udp_port = race_info.udp_port
 

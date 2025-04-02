@@ -345,7 +345,7 @@ public class RaceClient : MonoBehaviour
                     ? string.Join(", ", droneData.motor_rpms) 
                     : "No motor RPM data available";
 
-                    Debug.Log($"[WS] Prop Data: [{motorRpmData}] | Motor Count: {droneData.motor_count}");
+                    //Debug.Log($"[WS] Prop Data: [{motorRpmData}] | Motor Count: {droneData.motor_count}");
 
                     // Update the drone's position and rotation
                     if (DataManager.Instance == null)
