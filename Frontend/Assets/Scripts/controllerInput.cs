@@ -45,10 +45,6 @@ public class ControllerInput : MonoBehaviour
 
     void Start()
     {
-        if (SceneManager.GetActiveScene().name == "StartingScene")
-        {
-            return;
-        }
         droneViewCam = FindObjectOfType<DroneViewCam>();
         if (droneViewCam == null)
         {
@@ -65,7 +61,7 @@ public class ControllerInput : MonoBehaviour
     void Update()
     {
 
-        if (SceneManager.GetActiveScene().name != "RealReplay" || SceneManager.GetActiveScene().name != "TestingOverlay")
+        if (SceneManager.GetActiveScene().name != "RealReplay" && SceneManager.GetActiveScene().name != "TestingOverlay")
         {
             return;
         }
@@ -77,6 +73,7 @@ public class ControllerInput : MonoBehaviour
         {
             deleteRaceButton = GameObject.Find("DeleteRace").GetComponent<Button>();
         }
+
         var leftHand = InputSystem.GetDevice<XRController>(CommonUsages.LeftHand);
         var rightHand = InputSystem.GetDevice<XRController>(CommonUsages.RightHand);
 
@@ -156,6 +153,7 @@ public class ControllerInput : MonoBehaviour
                         {
                             deleteRaceButton.onClick.Invoke();
                         }
+                        canEnd = !canEnd;
                         SceneManager.LoadScene("StartingScene");
                     }
                 }

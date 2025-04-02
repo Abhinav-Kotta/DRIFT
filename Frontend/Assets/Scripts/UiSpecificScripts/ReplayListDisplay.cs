@@ -80,13 +80,13 @@ public class ReplayListDisplay : MonoBehaviour
                 }
                 else
                 {
-                Debug.LogWarning("[RaceListDisplay] Launch button not found in RaceCard prefab.");
+                    Debug.LogWarning("[RaceListDisplay] Launch button not found in RaceCard prefab.");
                 }
-            }
-            else
-            {
-                Debug.LogError("RaceCardUI component missing on prefab");
-            }
+                }
+                else
+                {
+                    Debug.LogError("RaceCardUI component missing on prefab");
+                }
             }
         }
     }

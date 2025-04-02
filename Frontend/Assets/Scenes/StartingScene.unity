@@ -1502,6 +1502,10 @@ MonoBehaviour:
   motorSpeed2: 1000
   motorSpeed3: 1000
   motorSpeed4: 1000
+  propeller1: {fileID: 0}
+  propeller2: {fileID: 0}
+  propeller3: {fileID: 0}
+  propeller4: {fileID: 0}
 --- !u!1 &1597091321
 GameObject:
   m_ObjectHideFlags: 0
@@ -2405,6 +2409,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -0.05
       objectReference: {fileID: 0}
+    - target: {fileID: 3879586255442075202, guid: aa912423dd10c284891389de492fa3cc, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4320396091380114493, guid: aa912423dd10c284891389de492fa3cc, type: 3}
       propertyPath: m_Name
       value: XR Origin (XR Rig)
@@ -2414,7 +2422,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 3879586255442075202, guid: aa912423dd10c284891389de492fa3cc, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aa912423dd10c284891389de492fa3cc, type: 3}
