@@ -44,6 +44,10 @@ public class ControllerInput : MonoBehaviour
 
     void Start()
     {
+        if (SceneManager.GetActiveScene().name == "StartingScene")
+        {
+            return;
+        }
         droneViewCam = FindObjectOfType<DroneViewCam>();
         if (droneViewCam == null)
         {
