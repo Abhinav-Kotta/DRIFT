@@ -218,15 +218,37 @@ async def update_saved_race(race_id: str, request: SaveRaceRequest, db=Depends(g
         raise HTTPException(status_code=500, detail=f"Error updating race: {str(e)}")
 
 # Delete a saved race: 
-@app.delete("/delete_race/{race_id}")
-async def delete_saved_race(race_id: str, db=Depends(get_db)):
+@app.delete("/delete_race/{race_id}/{user_id}")
+async def delete_saved_race(race_id: str, user_id: int, db=Depends(get_db)):
     try:
-        result = await db.execute("DELETE FROM races WHERE race_id = $1", race_id)
-        
-        if result == "DELETE 0":
-            raise HTTPException(status_code=404, detail="Race not found")
+        race = await db.fetchrow("SELECT user_id FROM races WHERE race_id = $1", race_id)
 
-        return {"status": "success", "message": f"Race {race_id} deleted successfully"}
+        if not race:
+            raise HTTPException(status_code=404, detail="Race not found")
+            
+        current_user_ids = race['user_id']
+        print(type(current_user_ids))
+
+        if isinstance(current_user_ids, str):
+            import json
+            current_user_ids = json.loads(current_user_ids)
+
+        user_id = int(user_id)
+
+        if user_id in current_user_ids:
+            current_user_ids.remove(user_id)
+        else:
+            raise HTTPException(status_code=400, detail="User not associated with this race")
+        
+        if not current_user_ids:
+            await db.execute("DELETE FROM races WHERE race_id = $1", race_id)
+            return {"status": "success", "message": f"Race {race_id} deleted successfully"}
+        else:
+            await db.execute(
+                "UPDATE races SET user_id = $1 WHERE race_id = $2",
+                current_user_ids, race_id
+            )
+            return {"status": "success", "message": f"User {user_id} removed from race {race_id}"}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting race: {str(e)}")

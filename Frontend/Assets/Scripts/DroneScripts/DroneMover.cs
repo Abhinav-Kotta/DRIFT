@@ -93,7 +93,7 @@ public class DroneMover : MonoBehaviour
             SimulateMovement();
         //Comment out for testing
         transform.position = getPosition();
-        //transform.rotation = getRotation();
+       
     }
 
     public Vector3 getPosition()

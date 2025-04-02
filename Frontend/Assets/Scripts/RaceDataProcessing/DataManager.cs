@@ -158,7 +158,32 @@ public class DataManager : MonoBehaviour
         string leaderboardString = "";
         for (int i = placeSortedDrones.Count; i > 0; i--)
         {
-            leaderboardString += $"{placeSortedDrones[i - 1].Name} in position {placeSortedDrones.Count + 1 - i}\n";
+            if((placeSortedDrones.Count + 1 - i ) == 1)
+            {
+                leaderboardString += $"1st | {placeSortedDrones[i - 1].Name}\n";
+            }
+            else if((placeSortedDrones.Count + 1 - i ) == 2)
+            {
+                leaderboardString += $"2nd | {placeSortedDrones[i - 1].Name}\n";
+            }
+            else if((placeSortedDrones.Count + 1 - i ) == 3)
+            {
+                leaderboardString += $"3rd | {placeSortedDrones[i - 1].Name}\n";
+            }
+            else if((placeSortedDrones.Count + 1 - i ) == 4)
+            {
+                leaderboardString += $"4th | {placeSortedDrones[i - 1].Name}\n";
+            }
+            else if((placeSortedDrones.Count + 1 - i ) == 5)
+            {
+                leaderboardString += $"5th | {placeSortedDrones[i - 1].Name}\n";
+            }
+            else if((placeSortedDrones.Count + 1 - i ) == 6)
+            {
+                leaderboardString += $"6th | {placeSortedDrones[i - 1].Name}\n";
+            }else{ 
+                leaderboardString += $"{placeSortedDrones.Count + 1 - i}th {placeSortedDrones[i - 1].Name}\n";
+            }
         }
 
         return leaderboardString;
