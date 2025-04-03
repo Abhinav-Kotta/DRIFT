@@ -28,10 +28,8 @@ The application consists of several interconnected components:
 ```
 └── ./
     ├── data_stream/              # Core data streaming components
-    │   ├── databaseconnection.py # Database connection utilities
     │   ├── liftoff_simulator.py  # Simulation data generator
     │   ├── main.py               # FastAPI application entry point
-    │   ├── telemetry_parser.py   # Telemetry data structure parser
     │   └── ws.py                 # WebSocket server implementation
     ├── Frontend/                 # Frontend components 
     ├── DatabaseConnectionExample.py # Example for connecting to the database
