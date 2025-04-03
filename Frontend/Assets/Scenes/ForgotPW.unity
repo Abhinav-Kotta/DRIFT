@@ -2918,7 +2918,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 267623844}
         m_TargetAssemblyTypeName: LoadManager, Assembly-CSharp
-        m_MethodName: SignUp
+        m_MethodName: SignIn
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
