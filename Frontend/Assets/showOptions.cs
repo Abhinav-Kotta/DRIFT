@@ -14,6 +14,7 @@ public class showOptions : MonoBehaviour
 
     public void ExitRace()
     {
+        SceneManager.UnloadScene(SceneManager.GetActiveScene().buildIndex);
         SceneManager.LoadScene("Import");
     }
 
@@ -40,6 +41,7 @@ public class showOptions : MonoBehaviour
             }
             else
             {
+                SceneManager.UnloadScene(SceneManager.GetActiveScene().buildIndex);
                 Debug.Log("Race deleted successfully.");
                 SceneManager.LoadScene("ListReplays");
             }

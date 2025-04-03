@@ -61,7 +61,7 @@ public class ControllerInput : MonoBehaviour
 
     void Update()
     {
-
+        dataManager = DataManager.Instance;
         if (SceneManager.GetActiveScene().name != "RealReplay" && SceneManager.GetActiveScene().name != "TestingOverlay")
         {
             return;

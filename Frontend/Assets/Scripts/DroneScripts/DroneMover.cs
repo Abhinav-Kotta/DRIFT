@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 public class DroneMover : MonoBehaviour
 {
-    [SerializeField] public String Name = "Drone";
+     public String Name = "Drone";
 
     private Vector3 lastPosition;
     private Vector3 currentPosition;
@@ -15,11 +15,11 @@ public class DroneMover : MonoBehaviour
     private int numGates; 
 
     // Can be used for testing for movement and rotation
-    [SerializeField] bool artificialMovement = true;
-    [SerializeField] bool artificialRotation = true;
+     bool artificialMovement = true;
+     bool artificialRotation = true;
 
     // Artificial speed of the drone for testing
-    [SerializeField] [Range(0,20)] private float artificalSpeed = 10f;
+     [Range(0,20)] private float artificalSpeed = 10f;
 
     // Testing purposes. Used to simulate movement rolling and pitching behavior
     public float angle = 0f;
@@ -32,42 +32,42 @@ public class DroneMover : MonoBehaviour
     private float initZ;
 
     // Position of drone
-    [SerializeField] float x;
-    [SerializeField] float y;
-    [SerializeField] float z;
+     float x;
+     float y;
+     float z;
 
     // Angle of drone
-    [SerializeField] float roll;
-    [SerializeField] float pitch;
-    [SerializeField] float yaw;
+     float roll;
+     float pitch;
+     float yaw;
 
     // Velocity of drone
-    [SerializeField] Vector3 velocity;
+     Vector3 velocity;
 
     // Gyro data
-    [SerializeField] float gyroPitch;
-    [SerializeField] float gyroRoll;
-    [SerializeField] float gyroYaw;
+     float gyroPitch;
+     float gyroRoll;
+     float gyroYaw;
 
     // Inputs
-    [SerializeField] float throttleInput;
-    [SerializeField] float yawInput;
-    [SerializeField] float pitchInput;
-    [SerializeField] float rollInput;
+     float throttleInput;
+     float yawInput;
+     float pitchInput;
+     float rollInput;
 
     // Battery data
-    [SerializeField] float batteryPercentage;
-    [SerializeField] float batteryVoltage;
+    float batteryPercentage;
+    float batteryVoltage;
 
     // Motor data
-    [SerializeField] int motorCount;
-    [SerializeField] float[] motorRpms;
+    int motorCount;
+    float[] motorRpms;
 
     // Used for rotating propeller. Measured in rotations per minute??
-    [SerializeField] [Range(0, 5000)] int motorSpeed1 = 0;  //Measured in rotations per minute??
-    [SerializeField] [Range(0, 5000)] int motorSpeed2 = 0;  
-    [SerializeField] [Range(0, 5000)] int motorSpeed3 = 0;
-    [SerializeField] [Range(0, 5000)] int motorSpeed4 = 0;
+    [Range(0, 5000)] int motorSpeed1 = 0;  //Measured in rotations per minute??
+    [Range(0, 5000)] int motorSpeed2 = 0;  
+    [Range(0, 5000)] int motorSpeed3 = 0;
+    [Range(0, 5000)] int motorSpeed4 = 0;
 
 
     public GameObject propeller1;
@@ -82,16 +82,14 @@ public class DroneMover : MonoBehaviour
         initX = gameObject.transform.position.x;
         initY = gameObject.transform.position.y;
         initZ = gameObject.transform.position.z;
-
+        x = initX;
+        z = initZ;
         y = initY;
 
     }
 
     void Update()
     {
-        if(artificialMovement)
-            SimulateMovement();
-        //Comment out for testing
         transform.position = getPosition();
        
     }
@@ -143,7 +141,6 @@ public class DroneMover : MonoBehaviour
         setRotation(droneData.attitude.x, droneData.attitude.y, droneData.attitude.z, droneData.attitude.w);
         setProps(droneData.motor_rpms); //needs testing. Should work. may throw type exception if anything. edit function decl below.
         this.velocity = new Vector3(droneData.velocity.x, droneData.velocity.y, droneData.velocity.z);
-        //Debug.Log($"velocity: {this.velocity}");
         this.gyroPitch = droneData.gyro.pitch;
         this.gyroRoll = droneData.gyro.roll;
         this.gyroYaw = droneData.gyro.yaw;

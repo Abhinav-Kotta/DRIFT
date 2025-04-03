@@ -28,9 +28,10 @@ public class DisplayTexture : MonoBehaviour
 
     void Update()
     {
+        dataManager = DataManager.Instance;
         if (!Application.isPlaying) return; // Prevents execution in Edit Mode
 
-        if (dataManager == null)
+        if (DataManager.Instance == null)
         {
             Debug.LogError("DataManager instance is null. Ensure DataManager is initialized before accessing it.");
             return;
