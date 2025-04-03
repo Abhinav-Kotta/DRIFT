@@ -1,4 +1,4 @@
-# Drone Telemetry System
+# DRIFT (Drone Racing Instant Flight Tracker)
 
 A complete solution for streaming, storing, visualizing, and managing drone telemetry data in real-time with race management capabilities.
 
