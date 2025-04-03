@@ -21,6 +21,16 @@ public class RaceCardUI : MonoBehaviour
         raceStatusText.text = $"Status: {status}";
     }
 
+    public void SetRaceInfo(string id, string status, string race_name)
+    {
+        raceID = id;
+        raceNameText.text = $"Race ID: {id.Substring(0, 8)}...";
+        udpPortText.text = $"Race Name: {race_name}";
+        raceStatusText.text = $"Status: {status}";
+        wsPortText.text = "";
+    }
+
+
     // TO ADD: Will handle button behavior to load race
     public void LoadRace()
     {

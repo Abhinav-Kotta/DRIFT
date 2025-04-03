@@ -69,7 +69,7 @@ public class ReplayListDisplay : MonoBehaviour
                 RaceCardUI cardUI = newRaceCard.GetComponent<RaceCardUI>();
                 if (cardUI != null)
                 {
-                cardUI.SetRaceInfo(race.race_id, "Completed", race.race_size_bytes, 0);
+                cardUI.SetRaceInfo(race.race_id, "Completed", race.race_name);
 
                 // ✅ Hook up the Launch button to LoadRace() in code
                 UnityEngine.UI.Button launchButton = newRaceCard.GetComponentInChildren<UnityEngine.UI.Button>();
