@@ -16,7 +16,7 @@ public class SpeedBasedTrail : MonoBehaviour
 
     void Update()
     {
-        float speed = droneMover.CalculateVelocityMagnitude();
+        float speed = droneMover.Velocity.magnitude;
 
         // Normalize the speed between 0 and 1 (0 speed = 0, 10 speed = 1)
         float normalizedSpeed = Mathf.Clamp01(speed / 10f);
