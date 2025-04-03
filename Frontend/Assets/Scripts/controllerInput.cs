@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class ControllerInput : MonoBehaviour
 {
+    public GameObject LeaderBoardCanvas; // Reference to the UI panel to toggle visibility
     public static ControllerInput Instance { get; private set; } // Singleton instance
 
     private bool canEnd;
@@ -20,7 +21,7 @@ public class ControllerInput : MonoBehaviour
     bool leftSecondaryPressedLast = false;
     bool leftOptionPressedLast = false;
     bool leftGripPressedLast = false;
-    bool leftTriggerPressedLast = false; // Track the last state of the left trigger button
+    bool leftTriggerPressedLast = false; 
 
     DataManager dataManager = null;
     DroneViewCam droneViewCam = null;
@@ -108,9 +109,9 @@ public class ControllerInput : MonoBehaviour
         {
             var primary = leftHand["primaryButton"] as ButtonControl;
             var secondary = leftHand["secondaryButton"] as ButtonControl;
-            var option = leftHand["menuButton"] as ButtonControl; // Add the menu/option button
+            var option = leftHand["menu"] as ButtonControl; // Use "start" for the menu button
             var grip = leftHand["gripButton"] as ButtonControl; // Add the grip button
-            var trigger = leftHand["triggerButton"] as ButtonControl; // Add the trigger button
+            var trigger = leftHand["triggerButton"] as ButtonControl; // Use "trigger" for the trigger button
 
             if (primary != null)
             {
@@ -137,18 +138,29 @@ public class ControllerInput : MonoBehaviour
                 {
                     Debug.Log("Left Option/Menu Button Just Pressed");
                     droneViewCam.popupPanel.enabled = !droneViewCam.popupPanel.enabled;
+
+                    if (LeaderBoardCanvas != null)
+                    {
+                        LeaderBoardCanvas.GetComponent<CanvasRenderer>().SetAlpha(droneViewCam.popupPanel.enabled ? 0 : 1); // Set alpha to 0 if popup is enabled, 1 if not
+
+                        Debug.Log("Toggling LeaderBoardCanvas visibility: " + !droneViewCam.popupPanel.enabled);
+                    }
+                    else
+                    {
+                        Debug.Log("LeaderBoardCanvas is not assigned in the Inspector.");
+                    }
                 }                
                 leftOptionPressedLast = option.isPressed;
             }
             if (droneViewCam.popupPanel.enabled)
             {
-
                 if (grip != null && grip.isPressed && !leftGripPressedLast)
                 {
                     Debug.Log("Left Grip Button Just Pressed -> Exit Race");
                     SceneManager.LoadScene("StartingScene");
                 }
                 leftGripPressedLast = grip.isPressed;
+                
                 if (trigger != null && trigger.isPressed && !leftTriggerPressedLast)
                 {
 
@@ -166,6 +178,7 @@ public class ControllerInput : MonoBehaviour
                 }
                 leftTriggerPressedLast = trigger.isPressed; // Update the last state of the left trigger button
             }
+            
         }
 
         // Handle stick inputs
