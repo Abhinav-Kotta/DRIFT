@@ -6,6 +6,7 @@ using TMPro; // For TextMeshPro
 public class LogOutScript : MonoBehaviour
 {
     [SerializeField] private Button logoutButton;
+    [SerializeField] private GameObject signinButton;
 
     void Start()
     {
@@ -13,6 +14,13 @@ public class LogOutScript : MonoBehaviour
             logoutButton = GetComponent<Button>();
 
         logoutButton.onClick.AddListener(OnLogoutClicked);
+
+        if (signinButton == null)
+        {
+            Debug.LogWarning("Signin button reference is not set in the inspector!");
+            // Optionally try to find it
+            signinButton = GameObject.Find("SignIn")?.gameObject;
+        }
     }
 
     void OnLogoutClicked()
@@ -25,6 +33,9 @@ public class LogOutScript : MonoBehaviour
             gameObject.SetActive(false);
             UserManager.Instance.Logout();
             Debug.Log("User logged out.");
+
+            signinButton.gameObject.SetActive(true);
+
         }
         else
         {

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
+
     public void StartingGame()
     {
         SceneManager.LoadScene("Game");
@@ -25,11 +26,16 @@ public class MenuManager : MonoBehaviour
 
     public void SignIn()
     {
-        SceneManager.LoadScene("SignIn");
+        if(UserManager.Instance.UserId == -1)
+            SceneManager.LoadScene("SignIn");
+        else
+            UserManager.Instance.Logout();
+        
     }
 
     public void Replay()
     {
-        SceneManager.LoadScene("ListReplays");
+        if(UserManager.Instance.UserId != -1)
+            SceneManager.LoadScene("ListReplays");
     }
 }

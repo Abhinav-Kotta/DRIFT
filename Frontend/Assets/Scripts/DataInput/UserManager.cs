@@ -65,12 +65,12 @@ public class UserManager : MonoBehaviour
         _token = token;
         _isLoggedIn = true;
         
-        Debug.Log($"User logged in - ID: {_userId}, Username: {_username}");
+        //Debug.Log($"User logged in - ID: {_userId}, Username: {_username}");
     }
     
     public void Logout()
     {
-        Debug.Log($"User logged out - ID: {_userId}, Username: {_username}");
+        //Debug.Log($"User logged out - ID: {_userId}, Username: {_username}");
         
         _userId = -1; // Reset to default value
         _username = "";
