@@ -135,7 +135,7 @@ public class DataManager : MonoBehaviour
     public List<DroneMover> GetLeaderBoard()
     {
         //Will be a list of active drone movers sorted by race position
-        List<DroneMover> placeSortedDrones = unmappedDroneMovers;// Testing put back after done activeDroneMovers;
+        List<DroneMover> placeSortedDrones = activeDroneMovers;// Testing put back after done activeDroneMovers;
         
         placeSortedDrones.Sort((p,q) => p.getPlacement().CompareTo(q.getPlacement()));
 
@@ -150,7 +150,7 @@ public class DataManager : MonoBehaviour
     public string GetLeaderBoardString()
     {
         // Will be a list of active drone movers sorted by race position
-        List<DroneMover> placeSortedDrones = unmappedDroneMovers; // Testing put back after done activeDroneMovers;
+        List<DroneMover> placeSortedDrones = activeDroneMovers; // Testing put back after done activeDroneMovers;
 
         placeSortedDrones.Sort((p, q) => p.getPlacement().CompareTo(q.getPlacement()));
 
