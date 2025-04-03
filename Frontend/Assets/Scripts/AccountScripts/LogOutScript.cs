@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro; // For TextMeshPro
 
 public class LogOutScript : MonoBehaviour
 {
@@ -16,17 +17,24 @@ public class LogOutScript : MonoBehaviour
 
     void OnLogoutClicked()
     {
-        if (UserManager.Instance != null)
+        
+        if (UserManager.Instance.UserId != -1)
         {
+            // SceneManager.LoadScene("StartingScene");
+            logoutButton.interactable = false;
+            gameObject.SetActive(false);
             UserManager.Instance.Logout();
             Debug.Log("User logged out.");
-
-            // Optionally return to login screen
-            SceneManager.LoadScene("StartingScene");
         }
         else
         {
             Debug.LogWarning("UserManager not found.");
         }
+    }
+
+    void OnDestroy()
+    {
+        if (logoutButton != null)
+            logoutButton.onClick.RemoveListener(OnLogoutClicked);
     }
 }
